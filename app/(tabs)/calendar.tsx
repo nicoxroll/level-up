@@ -1,6 +1,16 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Calendar as CalendarIcon, Plus } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Calendar as CalendarIcon,
+  Plus,
+} from 'lucide-react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { useState } from 'react';
 
@@ -9,21 +19,43 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState('');
 
   // Datos de ejemplo para el calendario
-  const workoutData: { [key: string]: { routine: string; completed: boolean; scheduled?: boolean } } = {
+  const workoutData: {
+    [key: string]: { routine: string; completed: boolean; scheduled?: boolean };
+  } = {
     '2024-11-20': { routine: 'Rutina Superior', completed: true },
     '2024-11-19': { routine: 'Rutina Full Body', completed: true },
     '2024-11-18': { routine: 'Rutina Inferior', completed: false },
-    '2024-11-21': { routine: 'Rutina Superior', completed: false, scheduled: true },
-    '2024-11-22': { routine: 'Rutina Full Body', completed: false, scheduled: true },
-    '2024-11-25': { routine: 'Rutina Superior', completed: false, scheduled: true },
-    '2024-11-27': { routine: 'Rutina Inferior', completed: false, scheduled: true },
+    '2024-11-21': {
+      routine: 'Rutina Superior',
+      completed: false,
+      scheduled: true,
+    },
+    '2024-11-22': {
+      routine: 'Rutina Full Body',
+      completed: false,
+      scheduled: true,
+    },
+    '2024-11-25': {
+      routine: 'Rutina Superior',
+      completed: false,
+      scheduled: true,
+    },
+    '2024-11-27': {
+      routine: 'Rutina Inferior',
+      completed: false,
+      scheduled: true,
+    },
   };
 
   const markedDates = Object.keys(workoutData).reduce((acc, date) => {
     const workout = workoutData[date];
     acc[date] = {
       marked: true,
-      dotColor: workout.completed ? '#FFFFFF' : workout.scheduled ? '#888888' : '#666666',
+      dotColor: workout.completed
+        ? '#FFFFFF'
+        : workout.scheduled
+        ? '#888888'
+        : '#666666',
       selected: selectedDate === date,
       selectedColor: '#FFFFFF',
       selectedTextColor: '#000000',
@@ -40,7 +72,10 @@ export default function CalendarScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <ChevronLeft size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.title}>CALENDARIO</Text>
@@ -84,17 +119,25 @@ export default function CalendarScreen() {
             </Text>
             {selectedWorkout ? (
               <>
-                <Text style={styles.routineName}>{selectedWorkout.routine}</Text>
+                <Text style={styles.routineName}>
+                  {selectedWorkout.routine}
+                </Text>
                 <View style={styles.workoutStats}>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>Estado:</Text>
                     <Text style={styles.statValue}>
-                      {selectedWorkout.completed ? 'Completado' : selectedWorkout.scheduled ? 'Programado' : 'Pendiente'}
+                      {selectedWorkout.completed
+                        ? 'Completado'
+                        : selectedWorkout.scheduled
+                        ? 'Programado'
+                        : 'Pendiente'}
                     </Text>
                   </View>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>Tipo:</Text>
-                    <Text style={styles.statValue}>{selectedWorkout.routine}</Text>
+                    <Text style={styles.statValue}>
+                      {selectedWorkout.routine}
+                    </Text>
                   </View>
                   {selectedWorkout.completed && (
                     <View style={styles.statRow}>
@@ -104,15 +147,21 @@ export default function CalendarScreen() {
                   )}
                 </View>
                 <View style={styles.statusContainer}>
-                  <View style={[
-                    styles.statusDot,
-                    selectedWorkout.completed && styles.completedDot,
-                    selectedWorkout.scheduled && !selectedWorkout.completed && styles.scheduledDot
-                  ]} />
+                  <View
+                    style={[
+                      styles.statusDot,
+                      selectedWorkout.completed && styles.completedDot,
+                      selectedWorkout.scheduled &&
+                        !selectedWorkout.completed &&
+                        styles.scheduledDot,
+                    ]}
+                  />
                 </View>
               </>
             ) : (
-              <Text style={styles.noWorkoutText}>No hay entrenamiento programado</Text>
+              <Text style={styles.noWorkoutText}>
+                No hay entrenamiento programado
+              </Text>
             )}
           </View>
         )}
@@ -139,7 +188,12 @@ export default function CalendarScreen() {
 
         <Text style={styles.sectionTitle}>Rutinas Programadas</Text>
         {Object.entries(workoutData)
-          .filter(([date, workout]) => workout.scheduled && !workout.completed && new Date(date) >= new Date())
+          .filter(
+            ([date, workout]) =>
+              workout.scheduled &&
+              !workout.completed &&
+              new Date(date) >= new Date()
+          )
           .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
           .map(([date, workout]) => (
             <View key={date} style={styles.workoutItem}>

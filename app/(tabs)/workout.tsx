@@ -1,6 +1,24 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Play, Pause, Check, Timer, SkipForward, RotateCcw, Square, CheckCircle, Dumbbell } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Play,
+  Pause,
+  Check,
+  Timer,
+  SkipForward,
+  RotateCcw,
+  Square,
+  CheckCircle,
+  Dumbbell,
+} from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 
 interface WorkoutExercise {
@@ -28,7 +46,9 @@ export default function WorkoutScreen() {
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [isRestPaused, setIsRestPaused] = useState(false);
   const [showRoutineSelector, setShowRoutineSelector] = useState(false);
-  const [selectedRoutine, setSelectedRoutine] = useState<WorkoutRoutine | null>(null);
+  const [selectedRoutine, setSelectedRoutine] = useState<WorkoutRoutine | null>(
+    null
+  );
 
   // Rutinas disponibles
   const availableRoutines: WorkoutRoutine[] = [
@@ -135,7 +155,7 @@ export default function WorkoutScreen() {
 
   // Rutina actual (inicialmente la primera)
   const [exercises, setExercises] = useState<WorkoutExercise[]>(
-    availableRoutines[0].exercises.map(ex => ({ ...ex }))
+    availableRoutines[0].exercises.map((ex) => ({ ...ex }))
   );
 
   useEffect(() => {
@@ -143,7 +163,7 @@ export default function WorkoutScreen() {
 
     if (isWorkoutActive) {
       interval = setInterval(() => {
-        setTotalTime(prev => prev + 1);
+        setTotalTime((prev) => prev + 1);
       }, 1000);
     }
 
@@ -155,7 +175,7 @@ export default function WorkoutScreen() {
 
     if (isResting && restTimeLeft > 0 && !isRestPaused) {
       restInterval = setInterval(() => {
-        setRestTimeLeft(prev => {
+        setRestTimeLeft((prev) => {
           if (prev <= 1) {
             setIsResting(false);
             return 0;
@@ -187,9 +207,9 @@ export default function WorkoutScreen() {
     setTotalTime(0);
     setIsWorkoutActive(false);
     setIsRestPaused(false);
-    const resetExercises = exercises.map(ex => ({
+    const resetExercises = exercises.map((ex) => ({
       ...ex,
-      completedSets: ex.completedSets.map(() => false)
+      completedSets: ex.completedSets.map(() => false),
     }));
     setExercises(resetExercises);
   };
@@ -206,7 +226,7 @@ export default function WorkoutScreen() {
 
   const selectRoutine = (routine: WorkoutRoutine) => {
     setSelectedRoutine(routine);
-    setExercises(routine.exercises.map(ex => ({ ...ex })));
+    setExercises(routine.exercises.map((ex) => ({ ...ex })));
     setCurrentExercise(0);
     setIsResting(false);
     setRestTimeLeft(0);
@@ -217,9 +237,9 @@ export default function WorkoutScreen() {
   };
 
   const completeEntireRoutine = () => {
-    const completedExercises = exercises.map(exercise => ({
+    const completedExercises = exercises.map((exercise) => ({
       ...exercise,
-      completedSets: exercise.completedSets.map(() => true)
+      completedSets: exercise.completedSets.map(() => true),
     }));
     setExercises(completedExercises);
     setIsWorkoutActive(false);
@@ -233,7 +253,9 @@ export default function WorkoutScreen() {
     setExercises(updatedExercises);
 
     // Si es la última serie del ejercicio, pasar al siguiente
-    const allSetsCompleted = updatedExercises[exerciseIndex].completedSets.every(set => set);
+    const allSetsCompleted = updatedExercises[
+      exerciseIndex
+    ].completedSets.every((set) => set);
     if (allSetsCompleted && exerciseIndex < exercises.length - 1) {
       setCurrentExercise(exerciseIndex + 1);
       setIsResting(true);
@@ -251,7 +273,9 @@ export default function WorkoutScreen() {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs
+      .toString()
+      .padStart(2, '0')}`;
   };
 
   const currentEx = exercises[currentExercise];
@@ -259,10 +283,16 @@ export default function WorkoutScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <ChevronLeft size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowRoutineSelector(true)} style={styles.routineSelector}>
+        <TouchableOpacity
+          onPress={() => setShowRoutineSelector(true)}
+          style={styles.routineSelector}
+        >
           <Dumbbell size={20} color="#FFFFFF" />
           <Text style={styles.routineSelectorText}>
             {selectedRoutine?.name || 'Seleccionar Rutina'}
@@ -288,10 +318,20 @@ export default function WorkoutScreen() {
           <Text style={styles.restText}>{formatTime(restTimeLeft)}</Text>
           <Text style={styles.restLabel}>Descanso</Text>
           <View style={styles.restControls}>
-            <TouchableOpacity onPress={toggleRestPause} style={styles.restControlButton}>
-              {isRestPaused ? <Play size={20} color="#FFFFFF" /> : <Pause size={20} color="#FFFFFF" />}
+            <TouchableOpacity
+              onPress={toggleRestPause}
+              style={styles.restControlButton}
+            >
+              {isRestPaused ? (
+                <Play size={20} color="#FFFFFF" />
+              ) : (
+                <Pause size={20} color="#FFFFFF" />
+              )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setIsResting(false)} style={styles.restControlButton}>
+            <TouchableOpacity
+              onPress={() => setIsResting(false)}
+              style={styles.restControlButton}
+            >
               <SkipForward size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
@@ -312,10 +352,14 @@ export default function WorkoutScreen() {
               <TouchableOpacity
                 key={index}
                 style={[styles.setButton, completed && styles.completedSet]}
-                onPress={() => !completed && completeSet(currentExercise, index)}
+                onPress={() =>
+                  !completed && completeSet(currentExercise, index)
+                }
                 disabled={completed}
               >
-                <Text style={[styles.setText, completed && styles.completedSetText]}>
+                <Text
+                  style={[styles.setText, completed && styles.completedSetText]}
+                >
                   {index + 1}
                 </Text>
                 {completed && <Check size={12} color="#000000" />}
@@ -336,11 +380,18 @@ export default function WorkoutScreen() {
 
         <Text style={styles.sectionTitle}>Controles</Text>
         <View style={styles.controlsContainer}>
-          <TouchableOpacity onPress={completeEntireRoutine} style={styles.controlButton}>
+          <TouchableOpacity
+            onPress={completeEntireRoutine}
+            style={styles.controlButton}
+          >
             <CheckCircle size={24} color="#FFFFFF" />
             <Text style={styles.controlButtonText}>Completar Rutina</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={skipExercise} style={styles.controlButton} disabled={currentExercise >= exercises.length - 1}>
+          <TouchableOpacity
+            onPress={skipExercise}
+            style={styles.controlButton}
+            disabled={currentExercise >= exercises.length - 1}
+          >
             <SkipForward size={24} color="#FFFFFF" />
             <Text style={styles.controlButtonText}>Saltar Ejercicio</Text>
           </TouchableOpacity>
@@ -371,7 +422,8 @@ export default function WorkoutScreen() {
                   key={routine.id}
                   style={[
                     styles.routineOption,
-                    selectedRoutine?.id === routine.id && styles.selectedRoutine
+                    selectedRoutine?.id === routine.id &&
+                      styles.selectedRoutine,
                   ]}
                   onPress={() => selectRoutine(routine)}
                 >
