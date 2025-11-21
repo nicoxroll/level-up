@@ -1,24 +1,18 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  TextInput,
-  Alert,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import {
-  ChevronLeft,
-  Calendar as CalendarIcon,
-  Plus,
-  Dumbbell,
-  Check,
-} from 'lucide-react-native';
-import { Calendar, DateData } from 'react-native-calendars';
-import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { Check, ChevronLeft, Dumbbell, Plus } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Calendar, DateData } from 'react-native-calendars';
 
 interface WorkoutData {
   routine: string;
@@ -34,7 +28,9 @@ interface WorkoutData {
 export default function CalendarScreen() {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState('');
-  const [workoutData, setWorkoutData] = useState<Record<string, WorkoutData>>({});
+  const [workoutData, setWorkoutData] = useState<Record<string, WorkoutData>>(
+    {}
+  );
   const [showAddRoutine, setShowAddRoutine] = useState(false);
   const [newRoutineName, setNewRoutineName] = useState('');
   const [newRoutineDate, setNewRoutineDate] = useState('');
@@ -105,9 +101,9 @@ export default function CalendarScreen() {
       marked: true,
       dotColor: workout.completed
         ? '#FFFFFF'
-        : (workout.stopped ?? false)
+        : workout.stopped ?? false
         ? '#888888'
-        : (workout.scheduled ?? false)
+        : workout.scheduled ?? false
         ? '#AAAAAA'
         : '#666666',
       selected: selectedDate === date,
@@ -183,9 +179,9 @@ export default function CalendarScreen() {
                     <Text style={styles.statValue}>
                       {selectedWorkout.completed
                         ? 'Completado'
-                        : (selectedWorkout.stopped ?? false)
+                        : selectedWorkout.stopped ?? false
                         ? 'Detenido'
-                        : (selectedWorkout.scheduled ?? false)
+                        : selectedWorkout.scheduled ?? false
                         ? 'Programado'
                         : 'Pendiente'}
                     </Text>
@@ -199,14 +195,19 @@ export default function CalendarScreen() {
                   {selectedWorkout.partialCompletion && (
                     <View style={styles.statRow}>
                       <Text style={styles.statLabel}>Progreso:</Text>
-                      <Text style={styles.statValue}>{selectedWorkout.partialCompletion}</Text>
+                      <Text style={styles.statValue}>
+                        {selectedWorkout.partialCompletion}
+                      </Text>
                     </View>
                   )}
                   {selectedWorkout.duration && (
                     <View style={styles.statRow}>
                       <Text style={styles.statLabel}>Duración:</Text>
                       <Text style={styles.statValue}>
-                        {Math.floor(selectedWorkout.duration / 60)}:{(selectedWorkout.duration % 60).toString().padStart(2, '0')}
+                        {Math.floor(selectedWorkout.duration / 60)}:
+                        {(selectedWorkout.duration % 60)
+                          .toString()
+                          .padStart(2, '0')}
                       </Text>
                     </View>
                   )}
@@ -258,7 +259,8 @@ export default function CalendarScreen() {
               <Text style={styles.workoutItemName}>{workout.routine}</Text>
               {workout.duration && (
                 <Text style={styles.workoutItemDuration}>
-                  {Math.floor(workout.duration / 60)}:{(workout.duration % 60).toString().padStart(2, '0')}
+                  {Math.floor(workout.duration / 60)}:
+                  {(workout.duration % 60).toString().padStart(2, '0')}
                 </Text>
               )}
             </View>
@@ -334,9 +336,12 @@ export default function CalendarScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Programar Rutina</Text>
-            
+
             <Text style={styles.subTitle}>Seleccionar Rutina</Text>
-            <ScrollView style={styles.routinesList} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.routinesList}
+              showsVerticalScrollIndicator={false}
+            >
               {userRoutines.length === 0 ? (
                 <Text style={styles.emptyText}>No tienes rutinas creadas</Text>
               ) : (
@@ -345,13 +350,16 @@ export default function CalendarScreen() {
                     key={routine.id}
                     style={[
                       styles.routineOption,
-                      newRoutineName === routine.name && styles.routineOptionSelected
+                      newRoutineName === routine.name &&
+                        styles.routineOptionSelected,
                     ]}
                     onPress={() => setNewRoutineName(routine.name)}
                   >
                     <Dumbbell size={20} color="#FFFFFF" />
                     <View style={styles.routineOptionInfo}>
-                      <Text style={styles.routineOptionName}>{routine.name}</Text>
+                      <Text style={styles.routineOptionName}>
+                        {routine.name}
+                      </Text>
                       <Text style={styles.routineOptionDetails}>
                         {routine.exercises.length} ejercicios
                       </Text>
@@ -406,8 +414,10 @@ export default function CalendarScreen() {
                         const baseDate = new Date(selectedDayForRoutine);
                         for (let week = 0; week < 4; week++) {
                           const weekDate = new Date(baseDate);
-                          weekDate.setDate(baseDate.getDate() + (week * 7));
-                          const weekDateString = weekDate.toISOString().split('T')[0];
+                          weekDate.setDate(baseDate.getDate() + week * 7);
+                          const weekDateString = weekDate
+                            .toISOString()
+                            .split('T')[0];
 
                           updatedWorkouts[weekDateString] = {
                             routine: newRoutineName,
@@ -426,7 +436,10 @@ export default function CalendarScreen() {
                       }
 
                       setWorkoutData(updatedWorkouts);
-                      await AsyncStorage.setItem('completedWorkouts', JSON.stringify(updatedWorkouts));
+                      await AsyncStorage.setItem(
+                        'completedWorkouts',
+                        JSON.stringify(updatedWorkouts)
+                      );
                       setShowAddRoutine(false);
                       setNewRoutineName('');
                       setNewRoutineDate('');
@@ -443,7 +456,10 @@ export default function CalendarScreen() {
                       Alert.alert('Error', 'No se pudo guardar la rutina');
                     }
                   } else {
-                    Alert.alert('Error', 'Por favor selecciona una rutina y una fecha');
+                    Alert.alert(
+                      'Error',
+                      'Por favor selecciona una rutina y una fecha'
+                    );
                   }
                 }}
               >

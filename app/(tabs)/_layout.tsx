@@ -1,13 +1,12 @@
-import { Tabs } from 'expo-router';
+import { supabase } from '@/lib/supabase';
+import { Tabs, useRouter } from 'expo-router';
 import {
-  Home,
+  Calendar,
   CheckCircle,
   Dumbbell,
-  Calendar,
+  Home,
   List,
 } from 'lucide-react-native';
-import { supabase } from '@/lib/supabase';
-import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -110,9 +109,7 @@ export default function TabLayout() {
         name="routines"
         options={{
           title: 'Rutinas',
-          tabBarIcon: ({ color, size }) => (
-            <List size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <List size={size} color={color} />,
         }}
       />
     </Tabs>

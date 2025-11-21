@@ -1,24 +1,17 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  TextInput,
-  Alert,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import {
-  ChevronLeft,
-  Plus,
-  Dumbbell,
-  Check,
-  Trash2,
-  Edit,
-} from 'lucide-react-native';
-import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { ChevronLeft, Dumbbell, Plus, Trash2 } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 interface Exercise {
   id: string;
@@ -40,8 +33,12 @@ export default function RoutinesScreen() {
   const [routines, setRoutines] = useState<WorkoutRoutine[]>([]);
   const [showAddRoutine, setShowAddRoutine] = useState(false);
   const [showAddExercise, setShowAddExercise] = useState(false);
-  const [editingRoutine, setEditingRoutine] = useState<WorkoutRoutine | null>(null);
-  const [currentRoutine, setCurrentRoutine] = useState<WorkoutRoutine | null>(null);
+  const [editingRoutine, setEditingRoutine] = useState<WorkoutRoutine | null>(
+    null
+  );
+  const [currentRoutine, setCurrentRoutine] = useState<WorkoutRoutine | null>(
+    null
+  );
 
   // Form states
   const [routineName, setRoutineName] = useState('');
@@ -54,15 +51,78 @@ export default function RoutinesScreen() {
 
   // Available exercises database
   const [availableExercises, setAvailableExercises] = useState<Exercise[]>([
-    { id: '1', name: 'Press de Banca', sets: 3, reps: '10', weight: '80kg', restTime: 60 },
-    { id: '2', name: 'Dominadas', sets: 3, reps: '8', weight: 'Peso Corporal', restTime: 90 },
-    { id: '3', name: 'Curl de Bíceps', sets: 3, reps: '12', weight: '25kg', restTime: 45 },
-    { id: '4', name: 'Sentadillas', sets: 4, reps: '12', weight: '60kg', restTime: 75 },
-    { id: '5', name: 'Press Militar', sets: 3, reps: '10', weight: '50kg', restTime: 60 },
-    { id: '6', name: 'Remo con Barra', sets: 3, reps: '8', weight: '70kg', restTime: 90 },
-    { id: '7', name: 'Peso Muerto', sets: 4, reps: '6', weight: '100kg', restTime: 120 },
-    { id: '8', name: 'Extensiones de Piernas', sets: 3, reps: '15', weight: '40kg', restTime: 60 },
-    { id: '9', name: 'Elevaciones de Gemelos', sets: 4, reps: '20', weight: '30kg', restTime: 45 },
+    {
+      id: '1',
+      name: 'Press de Banca',
+      sets: 3,
+      reps: '10',
+      weight: '80kg',
+      restTime: 60,
+    },
+    {
+      id: '2',
+      name: 'Dominadas',
+      sets: 3,
+      reps: '8',
+      weight: 'Peso Corporal',
+      restTime: 90,
+    },
+    {
+      id: '3',
+      name: 'Curl de Bíceps',
+      sets: 3,
+      reps: '12',
+      weight: '25kg',
+      restTime: 45,
+    },
+    {
+      id: '4',
+      name: 'Sentadillas',
+      sets: 4,
+      reps: '12',
+      weight: '60kg',
+      restTime: 75,
+    },
+    {
+      id: '5',
+      name: 'Press Militar',
+      sets: 3,
+      reps: '10',
+      weight: '50kg',
+      restTime: 60,
+    },
+    {
+      id: '6',
+      name: 'Remo con Barra',
+      sets: 3,
+      reps: '8',
+      weight: '70kg',
+      restTime: 90,
+    },
+    {
+      id: '7',
+      name: 'Peso Muerto',
+      sets: 4,
+      reps: '6',
+      weight: '100kg',
+      restTime: 120,
+    },
+    {
+      id: '8',
+      name: 'Extensiones de Piernas',
+      sets: 3,
+      reps: '15',
+      weight: '40kg',
+      restTime: 60,
+    },
+    {
+      id: '9',
+      name: 'Elevaciones de Gemelos',
+      sets: 4,
+      reps: '20',
+      weight: '30kg',
+      restTime: 45,
+    },
   ]);
 
   // Load routines from storage
@@ -83,7 +143,10 @@ export default function RoutinesScreen() {
   // Save routines to storage
   const saveRoutines = async (updatedRoutines: WorkoutRoutine[]) => {
     try {
-      await AsyncStorage.setItem('userRoutines', JSON.stringify(updatedRoutines));
+      await AsyncStorage.setItem(
+        'userRoutines',
+        JSON.stringify(updatedRoutines)
+      );
       setRoutines(updatedRoutines);
     } catch (error) {
       console.error('Error saving routines:', error);
@@ -136,7 +199,7 @@ export default function RoutinesScreen() {
       exercises: [...currentRoutine.exercises, newExercise],
     };
 
-    const updatedRoutines = routines.map(r =>
+    const updatedRoutines = routines.map((r) =>
       r.id === currentRoutine.id ? updatedRoutine : r
     );
 
@@ -161,7 +224,7 @@ export default function RoutinesScreen() {
       exercises: [...currentRoutine.exercises, newExercise],
     };
 
-    const updatedRoutines = routines.map(r =>
+    const updatedRoutines = routines.map((r) =>
       r.id === currentRoutine.id ? updatedRoutine : r
     );
 
@@ -174,10 +237,10 @@ export default function RoutinesScreen() {
 
     const updatedRoutine = {
       ...currentRoutine,
-      exercises: currentRoutine.exercises.filter(e => e.id !== exerciseId),
+      exercises: currentRoutine.exercises.filter((e) => e.id !== exerciseId),
     };
 
-    const updatedRoutines = routines.map(r =>
+    const updatedRoutines = routines.map((r) =>
       r.id === currentRoutine.id ? updatedRoutine : r
     );
 
@@ -195,7 +258,7 @@ export default function RoutinesScreen() {
           text: 'Eliminar',
           style: 'destructive',
           onPress: () => {
-            const updatedRoutines = routines.filter(r => r.id !== routineId);
+            const updatedRoutines = routines.filter((r) => r.id !== routineId);
             saveRoutines(updatedRoutines);
             if (currentRoutine?.id === routineId) {
               setCurrentRoutine(null);
@@ -292,14 +355,17 @@ export default function RoutinesScreen() {
 
             <Text style={styles.sectionTitle}>Ejercicios</Text>
             {currentRoutine.exercises.length === 0 ? (
-              <Text style={styles.emptyText}>No hay ejercicios en esta rutina</Text>
+              <Text style={styles.emptyText}>
+                No hay ejercicios en esta rutina
+              </Text>
             ) : (
               currentRoutine.exercises.map((exercise) => (
                 <View key={exercise.id} style={styles.exerciseCard}>
                   <View style={styles.exerciseInfo}>
                     <Text style={styles.exerciseName}>{exercise.name}</Text>
                     <Text style={styles.exerciseDetails}>
-                      {exercise.sets} series • {exercise.reps} reps • {exercise.weight}
+                      {exercise.sets} series • {exercise.reps} reps •{' '}
+                      {exercise.weight}
                     </Text>
                     <Text style={styles.exerciseRest}>
                       Descanso: {exercise.restTime}s
@@ -375,10 +441,15 @@ export default function RoutinesScreen() {
               value={exerciseSearch}
               onChangeText={setExerciseSearch}
             />
-            <ScrollView style={styles.exercisesList} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.exercisesList}
+              showsVerticalScrollIndicator={false}
+            >
               {availableExercises
-                .filter(exercise =>
-                  exercise.name.toLowerCase().includes(exerciseSearch.toLowerCase())
+                .filter((exercise) =>
+                  exercise.name
+                    .toLowerCase()
+                    .includes(exerciseSearch.toLowerCase())
                 )
                 .map((exercise) => (
                   <TouchableOpacity
@@ -388,9 +459,12 @@ export default function RoutinesScreen() {
                   >
                     <Dumbbell size={20} color="#FFFFFF" />
                     <View style={styles.exerciseOptionInfo}>
-                      <Text style={styles.exerciseOptionName}>{exercise.name}</Text>
+                      <Text style={styles.exerciseOptionName}>
+                        {exercise.name}
+                      </Text>
                       <Text style={styles.exerciseOptionDetails}>
-                        {exercise.sets} series • {exercise.reps} reps • {exercise.weight}
+                        {exercise.sets} series • {exercise.reps} reps •{' '}
+                        {exercise.weight}
                       </Text>
                     </View>
                     <Plus size={16} color="#FFFFFF" />

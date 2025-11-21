@@ -1,7 +1,19 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Trophy, Calendar, Dumbbell, TrendingUp, Star, Zap, Target, Award, Users } from 'lucide-react-native';
-import { Svg, Polygon } from 'react-native-svg';
+import {
+  Calendar,
+  Dumbbell,
+  Star,
+  TrendingUp,
+  Trophy,
+} from 'lucide-react-native';
 import { useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Polygon, Svg } from 'react-native-svg';
 
 export default function HomeScreen() {
   // Estado del jugador
@@ -16,7 +28,7 @@ export default function HomeScreen() {
       resistencia: 18,
       constancia: 14,
       tecnica: 16,
-    }
+    },
   });
 
   const stats = [
@@ -26,8 +38,20 @@ export default function HomeScreen() {
     { icon: TrendingUp, label: 'Progreso', value: '+15%' },
   ];
 
-  const statLabels = ['Fuerza', 'Velocidad', 'Resistencia', 'Constancia', 'Técnica'];
-  const statKeys = ['fuerza', 'velocidad', 'resistencia', 'constancia', 'tecnica'];
+  const statLabels = [
+    'Fuerza',
+    'Velocidad',
+    'Resistencia',
+    'Constancia',
+    'Técnica',
+  ];
+  const statKeys = [
+    'fuerza',
+    'velocidad',
+    'resistencia',
+    'constancia',
+    'tecnica',
+  ];
 
   // Calcular posiciones para el gráfico de radar
   const getRadarPoints = () => {
@@ -53,13 +77,13 @@ export default function HomeScreen() {
 
   const distributePoint = (statKey: string) => {
     if (playerStats.availablePoints > 0) {
-      setPlayerStats(prev => ({
+      setPlayerStats((prev) => ({
         ...prev,
         availablePoints: prev.availablePoints - 1,
         stats: {
           ...prev.stats,
           [statKey]: prev.stats[statKey as keyof typeof prev.stats] + 1,
-        }
+        },
       }));
     }
   };
@@ -74,13 +98,19 @@ export default function HomeScreen() {
         <View style={styles.levelHeader}>
           <Star size={24} color="#FFFFFF" />
           <Text style={styles.levelText}>Nivel {playerStats.level}</Text>
-          <Text style={styles.expText}>{playerStats.experience}/{playerStats.experienceToNext} XP</Text>
+          <Text style={styles.expText}>
+            {playerStats.experience}/{playerStats.experienceToNext} XP
+          </Text>
         </View>
         <View style={styles.expBar}>
           <View
             style={[
               styles.expFill,
-              { width: `${(playerStats.experience / playerStats.experienceToNext) * 100}%` }
+              {
+                width: `${
+                  (playerStats.experience / playerStats.experienceToNext) * 100
+                }%`,
+              },
             ]}
           />
         </View>
@@ -102,7 +132,7 @@ export default function HomeScreen() {
                 key={index}
                 style={[
                   styles.radarCircle,
-                  { width: 160 * scale, height: 160 * scale }
+                  { width: 160 * scale, height: 160 * scale },
                 ]}
               />
             ))}
@@ -116,10 +146,8 @@ export default function HomeScreen() {
                   style={[
                     styles.radarLine,
                     {
-                      transform: [
-                        { rotate: `${index * 72}deg` }
-                      ]
-                    }
+                      transform: [{ rotate: `${index * 72}deg` }],
+                    },
                   ]}
                 />
               );
@@ -128,7 +156,7 @@ export default function HomeScreen() {
             {/* Área de estadísticas */}
             <Svg width="200" height="200" style={{ position: 'absolute' }}>
               <Polygon
-                points={radarPoints.map(p => `${p.x},${p.y}`).join(' ')}
+                points={radarPoints.map((p) => `${p.x},${p.y}`).join(' ')}
                 fill="rgba(255,255,255,0.3)"
                 stroke="#FFFFFF"
                 strokeWidth="2"
@@ -149,7 +177,7 @@ export default function HomeScreen() {
                     {
                       left: x - 30,
                       top: y - 10,
-                    }
+                    },
                   ]}
                 >
                   {label}
@@ -168,7 +196,8 @@ export default function HomeScreen() {
                   onPress={() => distributePoint(key)}
                 >
                   <Text style={styles.distributeButtonText}>
-                    + {statLabels[index]} ({playerStats.stats[key as keyof typeof playerStats.stats]})
+                    + {statLabels[index]} (
+                    {playerStats.stats[key as keyof typeof playerStats.stats]})
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -199,7 +228,9 @@ export default function HomeScreen() {
           <Trophy size={32} color="#FFFFFF" />
           <View style={styles.achievementInfo}>
             <Text style={styles.achievementTitle}>¡Primera Semana!</Text>
-            <Text style={styles.achievementDesc}>Completaste 7 entrenamientos seguidos</Text>
+            <Text style={styles.achievementDesc}>
+              Completaste 7 entrenamientos seguidos
+            </Text>
           </View>
         </View>
       </ScrollView>

@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Chrome } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
-import * as WebBrowser from 'expo-web-browser';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import { Chrome } from 'lucide-react-native';
 import { useEffect } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 

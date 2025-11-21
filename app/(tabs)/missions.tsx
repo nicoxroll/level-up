@@ -1,24 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import {
-  ChevronLeft,
-  Target,
   Calendar,
-  Trophy,
   Check,
-  Clock,
-  Star,
+  ChevronLeft,
   Plus,
+  Star,
+  Target,
+  Trophy,
 } from 'lucide-react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 interface Quest {
   id: string;
@@ -36,7 +35,9 @@ interface Quest {
 
 export default function MissionsScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>(
+    'daily'
+  );
   const [quests, setQuests] = useState<Quest[]>([]);
   const [userXP, setUserXP] = useState(0);
 
@@ -64,7 +65,11 @@ export default function MissionsScreen() {
           if (questsToLoad) {
             // Reset daily quests
             questsToLoad = questsToLoad.map((quest: Quest) => {
-              if (quest.type === 'daily' && quest.isAccepted && !quest.isCompleted) {
+              if (
+                quest.type === 'daily' &&
+                quest.isAccepted &&
+                !quest.isCompleted
+              ) {
                 return { ...quest, isAccepted: false, progress: 0 };
               }
               return quest;
@@ -195,24 +200,28 @@ export default function MissionsScreen() {
   // Helper function to get week number
   const getWeekNumber = (date: Date) => {
     const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-    const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
+    const pastDaysOfYear =
+      (date.getTime() - firstDayOfYear.getTime()) / 86400000;
     return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
   };
 
   const acceptQuest = async (questId: string) => {
-    const updatedQuests = quests.map(quest =>
+    const updatedQuests = quests.map((quest) =>
       quest.id === questId ? { ...quest, isAccepted: true } : quest
     );
     setQuests(updatedQuests);
     await AsyncStorage.setItem('userQuests', JSON.stringify(updatedQuests));
-    Alert.alert('¡Misión Aceptada!', 'La misión ha sido agregada a tus quests activos.');
+    Alert.alert(
+      '¡Misión Aceptada!',
+      'La misión ha sido agregada a tus quests activos.'
+    );
   };
 
   const completeQuest = async (questId: string) => {
-    const quest = quests.find(q => q.id === questId);
+    const quest = quests.find((q) => q.id === questId);
     if (!quest) return;
 
-    const updatedQuests = quests.map(q =>
+    const updatedQuests = quests.map((q) =>
       q.id === questId ? { ...q, isCompleted: true } : q
     );
     const newXP = userXP + quest.xpReward;
@@ -223,12 +232,18 @@ export default function MissionsScreen() {
     await AsyncStorage.setItem('userQuests', JSON.stringify(updatedQuests));
     await AsyncStorage.setItem('userXP', newXP.toString());
 
-    Alert.alert('¡Misión Completada!', `Has ganado ${quest.xpReward} XP. Total: ${newXP} XP`);
+    Alert.alert(
+      '¡Misión Completada!',
+      `Has ganado ${quest.xpReward} XP. Total: ${newXP} XP`
+    );
   };
 
   // Function to update quest progress
-  const updateQuestProgress = async (questType: string, progressIncrement: number = 1) => {
-    const updatedQuests = quests.map(quest => {
+  const updateQuestProgress = async (
+    questType: string,
+    progressIncrement: number = 1
+  ) => {
+    const updatedQuests = quests.map((quest) => {
       if (quest.isAccepted && !quest.isCompleted && quest.type === questType) {
         const newProgress = (quest.progress || 0) + progressIncrement;
         const isCompleted = quest.total ? newProgress >= quest.total : false;
@@ -238,7 +253,10 @@ export default function MissionsScreen() {
           const newXP = userXP + quest.xpReward;
           setUserXP(newXP);
           AsyncStorage.setItem('userXP', newXP.toString());
-          Alert.alert('¡Misión Completada!', `Has ganado ${quest.xpReward} XP por "${quest.title}"`);
+          Alert.alert(
+            '¡Misión Completada!',
+            `Has ganado ${quest.xpReward} XP por "${quest.title}"`
+          );
         }
 
         return {
@@ -259,9 +277,11 @@ export default function MissionsScreen() {
     (global as any).updateQuestProgress = updateQuestProgress;
   }, [quests, userXP]);
 
-  const filteredQuests = quests.filter(quest => quest.type === activeTab);
-  const activeQuests = quests.filter(quest => quest.isAccepted && !quest.isCompleted);
-  const completedQuests = quests.filter(quest => quest.isCompleted);
+  const filteredQuests = quests.filter((quest) => quest.type === activeTab);
+  const activeQuests = quests.filter(
+    (quest) => quest.isAccepted && !quest.isCompleted
+  );
+  const completedQuests = quests.filter((quest) => quest.isCompleted);
 
   const getQuestIcon = (type: string) => {
     switch (type) {
@@ -298,8 +318,16 @@ export default function MissionsScreen() {
           style={[styles.tab, activeTab === 'daily' && styles.activeTab]}
           onPress={() => setActiveTab('daily')}
         >
-          <Calendar size={16} color={activeTab === 'daily' ? '#000000' : '#FFFFFF'} />
-          <Text style={[styles.tabText, activeTab === 'daily' && styles.activeTabText]}>
+          <Calendar
+            size={16}
+            color={activeTab === 'daily' ? '#000000' : '#FFFFFF'}
+          />
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === 'daily' && styles.activeTabText,
+            ]}
+          >
             Diarias
           </Text>
         </TouchableOpacity>
@@ -307,8 +335,16 @@ export default function MissionsScreen() {
           style={[styles.tab, activeTab === 'weekly' && styles.activeTab]}
           onPress={() => setActiveTab('weekly')}
         >
-          <Target size={16} color={activeTab === 'weekly' ? '#000000' : '#FFFFFF'} />
-          <Text style={[styles.tabText, activeTab === 'weekly' && styles.activeTabText]}>
+          <Target
+            size={16}
+            color={activeTab === 'weekly' ? '#000000' : '#FFFFFF'}
+          />
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === 'weekly' && styles.activeTabText,
+            ]}
+          >
             Semanales
           </Text>
         </TouchableOpacity>
@@ -316,8 +352,16 @@ export default function MissionsScreen() {
           style={[styles.tab, activeTab === 'monthly' && styles.activeTab]}
           onPress={() => setActiveTab('monthly')}
         >
-          <Trophy size={16} color={activeTab === 'monthly' ? '#000000' : '#FFFFFF'} />
-          <Text style={[styles.tabText, activeTab === 'monthly' && styles.activeTabText]}>
+          <Trophy
+            size={16}
+            color={activeTab === 'monthly' ? '#000000' : '#FFFFFF'}
+          />
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === 'monthly' && styles.activeTabText,
+            ]}
+          >
             Mensuales
           </Text>
         </TouchableOpacity>
@@ -334,7 +378,9 @@ export default function MissionsScreen() {
                   {getQuestIcon(quest.type)}
                   <View style={styles.questInfo}>
                     <Text style={styles.questTitle}>{quest.title}</Text>
-                    <Text style={styles.questDescription}>{quest.description}</Text>
+                    <Text style={styles.questDescription}>
+                      {quest.description}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.questFooter}>
@@ -356,7 +402,7 @@ export default function MissionsScreen() {
                       <View
                         style={[
                           styles.progressFill,
-                          { width: `${(quest.progress / quest.total) * 100}%` }
+                          { width: `${(quest.progress / quest.total) * 100}%` },
                         ]}
                       />
                     </View>
@@ -372,17 +418,21 @@ export default function MissionsScreen() {
 
         {/* Available Quests */}
         <Text style={styles.sectionTitle}>
-          Misiones Disponibles ({filteredQuests.filter(q => !q.isAccepted && !q.isCompleted).length})
+          Misiones Disponibles (
+          {filteredQuests.filter((q) => !q.isAccepted && !q.isCompleted).length}
+          )
         </Text>
         {filteredQuests
-          .filter(quest => !quest.isAccepted && !quest.isCompleted)
+          .filter((quest) => !quest.isAccepted && !quest.isCompleted)
           .map((quest) => (
             <View key={quest.id} style={styles.questCard}>
               <View style={styles.questHeader}>
                 {getQuestIcon(quest.type)}
                 <View style={styles.questInfo}>
                   <Text style={styles.questTitle}>{quest.title}</Text>
-                  <Text style={styles.questDescription}>{quest.description}</Text>
+                  <Text style={styles.questDescription}>
+                    {quest.description}
+                  </Text>
                 </View>
               </View>
               <View style={styles.questFooter}>
@@ -404,14 +454,23 @@ export default function MissionsScreen() {
         {/* Completed Quests */}
         {completedQuests.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Completadas ({completedQuests.length})</Text>
+            <Text style={styles.sectionTitle}>
+              Completadas ({completedQuests.length})
+            </Text>
             {completedQuests.map((quest) => (
-              <View key={quest.id} style={[styles.questCard, styles.completedQuest]}>
+              <View
+                key={quest.id}
+                style={[styles.questCard, styles.completedQuest]}
+              >
                 <View style={styles.questHeader}>
                   <Check size={20} color="#FFFFFF" />
                   <View style={styles.questInfo}>
-                    <Text style={[styles.questTitle, styles.completedText]}>{quest.title}</Text>
-                    <Text style={[styles.questDescription, styles.completedText]}>
+                    <Text style={[styles.questTitle, styles.completedText]}>
+                      {quest.title}
+                    </Text>
+                    <Text
+                      style={[styles.questDescription, styles.completedText]}
+                    >
                       {quest.description}
                     </Text>
                   </View>

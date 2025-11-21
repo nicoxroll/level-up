@@ -1,28 +1,27 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  Alert,
-} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import {
-  ChevronLeft,
-  Play,
-  Pause,
   Check,
-  Timer,
-  SkipForward,
-  RotateCcw,
-  Square,
   CheckCircle,
+  ChevronLeft,
   Dumbbell,
-  SkipBack,
+  Pause,
+  Play,
+  RotateCcw,
+  SkipForward,
+  Square,
+  Timer,
 } from 'lucide-react-native';
-import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 interface WorkoutExercise {
   id: string;
@@ -42,7 +41,9 @@ interface WorkoutRoutine {
 
 export default function WorkoutScreen() {
   const router = useRouter();
-  const [activeExerciseIndex, setActiveExerciseIndex] = useState<number | null>(null);
+  const [activeExerciseIndex, setActiveExerciseIndex] = useState<number | null>(
+    null
+  );
   const [isResting, setIsResting] = useState(false);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
@@ -53,7 +54,9 @@ export default function WorkoutScreen() {
   );
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
 
-  const [availableRoutines, setAvailableRoutines] = useState<WorkoutRoutine[]>([]);
+  const [availableRoutines, setAvailableRoutines] = useState<WorkoutRoutine[]>(
+    []
+  );
 
   // Load routines from storage
   useEffect(() => {
@@ -223,7 +226,10 @@ export default function WorkoutScreen() {
   };
 
   const skipExercise = () => {
-    if (activeExerciseIndex !== null && activeExerciseIndex < exercises.length - 1) {
+    if (
+      activeExerciseIndex !== null &&
+      activeExerciseIndex < exercises.length - 1
+    ) {
       selectExercise(activeExerciseIndex + 1);
     }
   };
@@ -255,10 +261,15 @@ export default function WorkoutScreen() {
     // Guardar el workout detenido como parcialmente completado
     try {
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-      const completedSets = exercises.reduce((total, exercise) =>
-        total + exercise.completedSets.filter(set => set).length, 0
+      const completedSets = exercises.reduce(
+        (total, exercise) =>
+          total + exercise.completedSets.filter((set) => set).length,
+        0
       );
-      const totalSets = exercises.reduce((total, exercise) => total + exercise.sets, 0);
+      const totalSets = exercises.reduce(
+        (total, exercise) => total + exercise.sets,
+        0
+      );
 
       const workoutData = {
         date: today,
@@ -275,7 +286,12 @@ export default function WorkoutScreen() {
       workouts[today] = workoutData;
       await AsyncStorage.setItem('completedWorkouts', JSON.stringify(workouts));
 
-      Alert.alert('Workout Detenido', `Has completado ${completedSets}/${totalSets} series en ${formatTime(totalTime)}`);
+      Alert.alert(
+        'Workout Detenido',
+        `Has completado ${completedSets}/${totalSets} series en ${formatTime(
+          totalTime
+        )}`
+      );
     } catch (error) {
       console.error('Error saving workout:', error);
     }
@@ -294,15 +310,15 @@ export default function WorkoutScreen() {
 
   const selectExercise = (index: number) => {
     const updatedExercises = [...exercises];
-    
+
     if (activeExerciseIndex !== null && activeExerciseIndex !== index) {
       // Pause the currently active exercise
       updatedExercises[activeExerciseIndex].isPaused = true;
     }
-    
+
     // Unpause the selected exercise
     updatedExercises[index].isPaused = false;
-    
+
     setExercises(updatedExercises);
     setActiveExerciseIndex(index);
     setIsResting(false);
@@ -343,7 +359,12 @@ export default function WorkoutScreen() {
       workouts[today] = workoutData;
       await AsyncStorage.setItem('completedWorkouts', JSON.stringify(workouts));
 
-      Alert.alert('¡Rutina Completada!', `Has completado ${selectedRoutine?.name || 'tu rutina'} en ${formatTime(totalTime)}`);
+      Alert.alert(
+        '¡Rutina Completada!',
+        `Has completado ${selectedRoutine?.name || 'tu rutina'} en ${formatTime(
+          totalTime
+        )}`
+      );
     } catch (error) {
       console.error('Error saving workout:', error);
     }
@@ -355,7 +376,9 @@ export default function WorkoutScreen() {
     setExercises(updatedExercises);
 
     // Si es la última serie del ejercicio, iniciar descanso
-    const allSetsCompleted = updatedExercises[exerciseIndex].completedSets.every((set) => set);
+    const allSetsCompleted = updatedExercises[
+      exerciseIndex
+    ].completedSets.every((set) => set);
     if (allSetsCompleted) {
       // Iniciar descanso
       setIsResting(true);
@@ -426,10 +449,13 @@ export default function WorkoutScreen() {
         <Text style={styles.sectionTitle}>Ejercicios</Text>
 
         {exercises.map((exercise, index) => (
-          <View key={exercise.id} style={[
-            styles.exerciseCard,
-            activeExerciseIndex === index && styles.activeExerciseCard
-          ]}>
+          <View
+            key={exercise.id}
+            style={[
+              styles.exerciseCard,
+              activeExerciseIndex === index && styles.activeExerciseCard,
+            ]}
+          >
             <View style={styles.exerciseHeader}>
               <View style={styles.exerciseInfo}>
                 <Text style={styles.exerciseName}>{exercise.name}</Text>
@@ -442,7 +468,8 @@ export default function WorkoutScreen() {
                   if (activeExerciseIndex === index) {
                     // Toggle pause for the active exercise
                     const updatedExercises = [...exercises];
-                    updatedExercises[index].isPaused = !updatedExercises[index].isPaused;
+                    updatedExercises[index].isPaused =
+                      !updatedExercises[index].isPaused;
                     setExercises(updatedExercises);
                   } else {
                     // Select a different exercise
@@ -451,7 +478,7 @@ export default function WorkoutScreen() {
                 }}
                 style={[
                   styles.exercisePlayButton,
-                  activeExerciseIndex === index && styles.activePlayButton
+                  activeExerciseIndex === index && styles.activePlayButton,
                 ]}
               >
                 {activeExerciseIndex === index ? (
@@ -471,13 +498,14 @@ export default function WorkoutScreen() {
                 <TouchableOpacity
                   key={setIndex}
                   style={[styles.setButton, completed && styles.completedSet]}
-                  onPress={() =>
-                    !completed && completeSet(index, setIndex)
-                  }
+                  onPress={() => !completed && completeSet(index, setIndex)}
                   disabled={completed}
                 >
                   <Text
-                    style={[styles.setText, completed && styles.completedSetText]}
+                    style={[
+                      styles.setText,
+                      completed && styles.completedSetText,
+                    ]}
                   >
                     {setIndex + 1}
                   </Text>
@@ -490,7 +518,9 @@ export default function WorkoutScreen() {
 
         {exercises.length === 0 && (
           <View style={styles.currentExerciseCard}>
-            <Text style={styles.exerciseName}>No hay ejercicios disponibles</Text>
+            <Text style={styles.exerciseName}>
+              No hay ejercicios disponibles
+            </Text>
             <Text style={styles.exerciseDetails}>
               Selecciona una rutina para comenzar
             </Text>
@@ -510,16 +540,25 @@ export default function WorkoutScreen() {
         <TouchableOpacity
           onPress={skipExercise}
           style={styles.bottomControlButton}
-          disabled={activeExerciseIndex === null || activeExerciseIndex >= exercises.length - 1}
+          disabled={
+            activeExerciseIndex === null ||
+            activeExerciseIndex >= exercises.length - 1
+          }
         >
           <SkipForward size={24} color="#FFFFFF" />
           <Text style={styles.bottomControlText}>Saltar</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={resetWorkout} style={styles.bottomControlButton}>
+        <TouchableOpacity
+          onPress={resetWorkout}
+          style={styles.bottomControlButton}
+        >
           <RotateCcw size={24} color="#FFFFFF" />
           <Text style={styles.bottomControlText}>Reiniciar</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={stopWorkout} style={styles.bottomControlButton}>
+        <TouchableOpacity
+          onPress={stopWorkout}
+          style={styles.bottomControlButton}
+        >
           <Square size={24} color="#FFFFFF" />
           <Text style={styles.bottomControlText}>Detener</Text>
         </TouchableOpacity>
