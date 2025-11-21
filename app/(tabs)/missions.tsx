@@ -262,3 +262,4 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     letterSpacing: 0.5,
   },
+});

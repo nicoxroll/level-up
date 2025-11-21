@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Trophy, Calendar, Dumbbell, TrendingUp, Star, Zap, Target, Award, Users } from 'lucide-react-native';
+import { Svg, Polygon } from 'react-native-svg';
 import { useState } from 'react';
 
 export default function HomeScreen() {
@@ -125,25 +126,14 @@ export default function HomeScreen() {
             })}
 
             {/* Área de estadísticas */}
-            <View style={styles.statsArea}>
-              {radarPoints.map((point, index) => {
-                const nextPoint = radarPoints[(index + 1) % radarPoints.length];
-                return (
-                  <View
-                    key={`area-${index}`}
-                    style={{
-                      position: 'absolute',
-                      left: point.x - 2,
-                      top: point.y - 2,
-                      width: 4,
-                      height: 4,
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: 2,
-                    }}
-                  />
-                );
-              })}
-            </View>
+            <Svg width="200" height="200" style={{ position: 'absolute' }}>
+              <Polygon
+                points={radarPoints.map(p => `${p.x},${p.y}`).join(' ')}
+                fill="rgba(255,255,255,0.3)"
+                stroke="#FFFFFF"
+                strokeWidth="2"
+              />
+            </Svg>
 
             {/* Etiquetas de estadísticas */}
             {statLabels.map((label, index) => {
@@ -424,3 +414,4 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     letterSpacing: 0.5,
   },
+});
