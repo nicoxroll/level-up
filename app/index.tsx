@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     elevation: 5,
+    borderRadius: 0,
   },
   loginButtonText: {
     fontSize: 16,

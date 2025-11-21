@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -18,8 +19,10 @@ import {
   Square,
   CheckCircle,
   Dumbbell,
+  SkipBack,
 } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface WorkoutExercise {
   id: string;
@@ -39,136 +42,163 @@ interface WorkoutRoutine {
 
 export default function WorkoutScreen() {
   const router = useRouter();
-  const [currentExercise, setCurrentExercise] = useState(0);
+  const [activeExerciseIndex, setActiveExerciseIndex] = useState<number | null>(null);
   const [isResting, setIsResting] = useState(false);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
-  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [isRestPaused, setIsRestPaused] = useState(false);
   const [showRoutineSelector, setShowRoutineSelector] = useState(false);
   const [selectedRoutine, setSelectedRoutine] = useState<WorkoutRoutine | null>(
     null
   );
+  const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
 
-  // Rutinas disponibles
-  const availableRoutines: WorkoutRoutine[] = [
-    {
-      id: '1',
-      name: 'Rutina Superior',
-      exercises: [
-        {
-          id: '1',
-          name: 'Press de Banca',
-          sets: 3,
-          reps: '10',
-          weight: '80kg',
-          restTime: 60,
-          completedSets: [false, false, false],
-        },
-        {
-          id: '2',
-          name: 'Dominadas',
-          sets: 3,
-          reps: '8',
-          weight: 'Peso Corporal',
-          restTime: 90,
-          completedSets: [false, false, false],
-        },
-        {
-          id: '3',
-          name: 'Curl de Bíceps',
-          sets: 3,
-          reps: '12',
-          weight: '25kg',
-          restTime: 45,
-          completedSets: [false, false, false],
-        },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Rutina Full Body',
-      exercises: [
-        {
-          id: '4',
-          name: 'Sentadillas',
-          sets: 4,
-          reps: '12',
-          weight: '60kg',
-          restTime: 75,
-          completedSets: [false, false, false, false],
-        },
-        {
-          id: '5',
-          name: 'Press Militar',
-          sets: 3,
-          reps: '10',
-          weight: '50kg',
-          restTime: 60,
-          completedSets: [false, false, false],
-        },
-        {
-          id: '6',
-          name: 'Remo con Barra',
-          sets: 3,
-          reps: '8',
-          weight: '70kg',
-          restTime: 90,
-          completedSets: [false, false, false],
-        },
-      ],
-    },
-    {
-      id: '3',
-      name: 'Rutina Inferior',
-      exercises: [
-        {
-          id: '7',
-          name: 'Peso Muerto',
-          sets: 4,
-          reps: '6',
-          weight: '100kg',
-          restTime: 120,
-          completedSets: [false, false, false, false],
-        },
-        {
-          id: '8',
-          name: 'Extensiones de Piernas',
-          sets: 3,
-          reps: '15',
-          weight: '40kg',
-          restTime: 60,
-          completedSets: [false, false, false],
-        },
-        {
-          id: '9',
-          name: 'Elevaciones de Gemelos',
-          sets: 4,
-          reps: '20',
-          weight: '30kg',
-          restTime: 45,
-          completedSets: [false, false, false, false],
-        },
-      ],
-    },
-  ];
+  const [availableRoutines, setAvailableRoutines] = useState<WorkoutRoutine[]>([]);
 
-  // Rutina actual (inicialmente la primera)
-  const [exercises, setExercises] = useState<WorkoutExercise[]>(
-    availableRoutines[0].exercises.map((ex) => ({ ...ex }))
-  );
+  // Load routines from storage
+  useEffect(() => {
+    const loadRoutines = async () => {
+      try {
+        const storedRoutines = await AsyncStorage.getItem('userRoutines');
+        if (storedRoutines) {
+          const userRoutines = JSON.parse(storedRoutines);
+          setAvailableRoutines(userRoutines);
+          // Set first routine as default if available
+          if (userRoutines.length > 0 && !selectedRoutine) {
+            const firstRoutine = userRoutines[0];
+            setExercises(firstRoutine.exercises.map((ex: any) => ({ ...ex })));
+            setSelectedRoutine(firstRoutine);
+            setActiveExerciseIndex(null); // Start with no exercise active
+          }
+        } else {
+          // Default routines if none saved
+          const defaultRoutines: WorkoutRoutine[] = [
+            {
+              id: '1',
+              name: 'Rutina Superior',
+              exercises: [
+                {
+                  id: '1',
+                  name: 'Press de Banca',
+                  sets: 3,
+                  reps: '10',
+                  weight: '80kg',
+                  restTime: 60,
+                  completedSets: [false, false, false],
+                },
+                {
+                  id: '2',
+                  name: 'Dominadas',
+                  sets: 3,
+                  reps: '8',
+                  weight: 'Peso Corporal',
+                  restTime: 90,
+                  completedSets: [false, false, false],
+                },
+                {
+                  id: '3',
+                  name: 'Curl de Bíceps',
+                  sets: 3,
+                  reps: '12',
+                  weight: '25kg',
+                  restTime: 45,
+                  completedSets: [false, false, false],
+                },
+              ],
+            },
+            {
+              id: '2',
+              name: 'Rutina Full Body',
+              exercises: [
+                {
+                  id: '4',
+                  name: 'Sentadillas',
+                  sets: 4,
+                  reps: '12',
+                  weight: '60kg',
+                  restTime: 75,
+                  completedSets: [false, false, false, false],
+                },
+                {
+                  id: '5',
+                  name: 'Press Militar',
+                  sets: 3,
+                  reps: '10',
+                  weight: '50kg',
+                  restTime: 60,
+                  completedSets: [false, false, false],
+                },
+                {
+                  id: '6',
+                  name: 'Remo con Barra',
+                  sets: 3,
+                  reps: '8',
+                  weight: '70kg',
+                  restTime: 90,
+                  completedSets: [false, false, false],
+                },
+              ],
+            },
+            {
+              id: '3',
+              name: 'Rutina Inferior',
+              exercises: [
+                {
+                  id: '7',
+                  name: 'Peso Muerto',
+                  sets: 4,
+                  reps: '6',
+                  weight: '100kg',
+                  restTime: 120,
+                  completedSets: [false, false, false, false],
+                },
+                {
+                  id: '8',
+                  name: 'Extensiones de Piernas',
+                  sets: 3,
+                  reps: '15',
+                  weight: '40kg',
+                  restTime: 60,
+                  completedSets: [false, false, false],
+                },
+                {
+                  id: '9',
+                  name: 'Elevaciones de Gemelos',
+                  sets: 4,
+                  reps: '20',
+                  weight: '30kg',
+                  restTime: 45,
+                  completedSets: [false, false, false, false],
+                },
+              ],
+            },
+          ];
+          setAvailableRoutines(defaultRoutines);
+          if (defaultRoutines.length > 0 && !selectedRoutine) {
+            const firstRoutine = defaultRoutines[0];
+            setExercises(firstRoutine.exercises.map((ex: any) => ({ ...ex })));
+            setSelectedRoutine(firstRoutine);
+            setActiveExerciseIndex(null); // Start with no exercise active
+          }
+        }
+      } catch (error) {
+        console.error('Error loading routines:', error);
+      }
+    };
+    loadRoutines();
+  }, []);
 
   useEffect(() => {
     let interval: number;
 
-    if (isWorkoutActive) {
+    if (activeExerciseIndex !== null) {
       interval = setInterval(() => {
         setTotalTime((prev) => prev + 1);
       }, 1000);
     }
 
     return () => clearInterval(interval);
-  }, [isWorkoutActive]);
+  }, [activeExerciseIndex]);
 
   useEffect(() => {
     let restInterval: number;
@@ -193,15 +223,13 @@ export default function WorkoutScreen() {
   };
 
   const skipExercise = () => {
-    if (currentExercise < exercises.length - 1) {
-      setCurrentExercise(currentExercise + 1);
-      setIsResting(false);
-      setRestTimeLeft(0);
+    if (activeExerciseIndex !== null && activeExerciseIndex < exercises.length - 1) {
+      selectExercise(activeExerciseIndex + 1);
     }
   };
 
   const resetWorkout = () => {
-    setCurrentExercise(0);
+    setActiveExerciseIndex(null);
     setIsResting(false);
     setRestTimeLeft(0);
     setTotalTime(0);
@@ -210,6 +238,7 @@ export default function WorkoutScreen() {
     const resetExercises = exercises.map((ex) => ({
       ...ex,
       completedSets: ex.completedSets.map(() => false),
+      isPaused: false,
     }));
     setExercises(resetExercises);
   };
@@ -218,25 +247,70 @@ export default function WorkoutScreen() {
     setIsRestPaused(!isRestPaused);
   };
 
-  const stopWorkout = () => {
+  const stopWorkout = async () => {
     setIsWorkoutActive(false);
     setIsResting(false);
     setRestTimeLeft(0);
+
+    // Guardar el workout detenido como parcialmente completado
+    try {
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+      const completedSets = exercises.reduce((total, exercise) =>
+        total + exercise.completedSets.filter(set => set).length, 0
+      );
+      const totalSets = exercises.reduce((total, exercise) => total + exercise.sets, 0);
+
+      const workoutData = {
+        date: today,
+        routine: selectedRoutine?.name || 'Rutina Personalizada',
+        completed: false, // No completado totalmente
+        partialCompletion: `${completedSets}/${totalSets} series`,
+        duration: totalTime,
+        exercises: exercises.length,
+        stopped: true,
+      };
+
+      const existingWorkouts = await AsyncStorage.getItem('completedWorkouts');
+      const workouts = existingWorkouts ? JSON.parse(existingWorkouts) : {};
+      workouts[today] = workoutData;
+      await AsyncStorage.setItem('completedWorkouts', JSON.stringify(workouts));
+
+      Alert.alert('Workout Detenido', `Has completado ${completedSets}/${totalSets} series en ${formatTime(totalTime)}`);
+    } catch (error) {
+      console.error('Error saving workout:', error);
+    }
   };
 
   const selectRoutine = (routine: WorkoutRoutine) => {
     setSelectedRoutine(routine);
-    setExercises(routine.exercises.map((ex) => ({ ...ex })));
-    setCurrentExercise(0);
+    setExercises(routine.exercises.map((ex) => ({ ...ex, isPaused: false })));
+    setActiveExerciseIndex(null);
     setIsResting(false);
     setRestTimeLeft(0);
     setTotalTime(0);
-    setIsWorkoutActive(false);
     setIsRestPaused(false);
     setShowRoutineSelector(false);
   };
 
-  const completeEntireRoutine = () => {
+  const selectExercise = (index: number) => {
+    const updatedExercises = [...exercises];
+    
+    if (activeExerciseIndex !== null && activeExerciseIndex !== index) {
+      // Pause the currently active exercise
+      updatedExercises[activeExerciseIndex].isPaused = true;
+    }
+    
+    // Unpause the selected exercise
+    updatedExercises[index].isPaused = false;
+    
+    setExercises(updatedExercises);
+    setActiveExerciseIndex(index);
+    setIsResting(false);
+    setRestTimeLeft(0);
+    setIsRestPaused(false);
+  };
+
+  const completeEntireRoutine = async () => {
     const completedExercises = exercises.map((exercise) => ({
       ...exercise,
       completedSets: exercise.completedSets.map(() => true),
@@ -245,6 +319,34 @@ export default function WorkoutScreen() {
     setIsWorkoutActive(false);
     setIsResting(false);
     setRestTimeLeft(0);
+
+    // Update quest progress for workout completion
+    if ((global as any).updateQuestProgress) {
+      (global as any).updateQuestProgress('daily', 1); // Daily workout completed
+      (global as any).updateQuestProgress('weekly', 1); // Weekly workout completed
+      (global as any).updateQuestProgress('monthly', 1); // Monthly workout completed
+    }
+
+    // Guardar el workout completado en AsyncStorage
+    try {
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+      const workoutData = {
+        date: today,
+        routine: selectedRoutine?.name || 'Rutina Personalizada',
+        completed: true,
+        duration: totalTime,
+        exercises: completedExercises.length,
+      };
+
+      const existingWorkouts = await AsyncStorage.getItem('completedWorkouts');
+      const workouts = existingWorkouts ? JSON.parse(existingWorkouts) : {};
+      workouts[today] = workoutData;
+      await AsyncStorage.setItem('completedWorkouts', JSON.stringify(workouts));
+
+      Alert.alert('¡Rutina Completada!', `Has completado ${selectedRoutine?.name || 'tu rutina'} en ${formatTime(totalTime)}`);
+    } catch (error) {
+      console.error('Error saving workout:', error);
+    }
   };
 
   const completeSet = (exerciseIndex: number, setIndex: number) => {
@@ -252,18 +354,9 @@ export default function WorkoutScreen() {
     updatedExercises[exerciseIndex].completedSets[setIndex] = true;
     setExercises(updatedExercises);
 
-    // Si es la última serie del ejercicio, pasar al siguiente
-    const allSetsCompleted = updatedExercises[
-      exerciseIndex
-    ].completedSets.every((set) => set);
-    if (allSetsCompleted && exerciseIndex < exercises.length - 1) {
-      setCurrentExercise(exerciseIndex + 1);
-      setIsResting(true);
-      setRestTimeLeft(exercises[exerciseIndex + 1].restTime);
-    } else if (allSetsCompleted) {
-      // Workout completado
-      setIsWorkoutActive(false);
-    } else {
+    // Si es la última serie del ejercicio, iniciar descanso
+    const allSetsCompleted = updatedExercises[exerciseIndex].completedSets.every((set) => set);
+    if (allSetsCompleted) {
       // Iniciar descanso
       setIsResting(true);
       setRestTimeLeft(exercises[exerciseIndex].restTime);
@@ -277,8 +370,6 @@ export default function WorkoutScreen() {
       .toString()
       .padStart(2, '0')}`;
   };
-
-  const currentEx = exercises[currentExercise];
 
   return (
     <View style={styles.container}>
@@ -297,13 +388,6 @@ export default function WorkoutScreen() {
           <Text style={styles.routineSelectorText}>
             {selectedRoutine?.name || 'Seleccionar Rutina'}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={toggleWorkout} style={styles.mainPlayButton}>
-          {isWorkoutActive ? (
-            <Pause size={32} color="#000000" />
-          ) : (
-            <Play size={32} color="#000000" />
-          )}
         </TouchableOpacity>
       </View>
 
@@ -339,72 +423,107 @@ export default function WorkoutScreen() {
       )}
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionTitle}>Ejercicio Actual</Text>
+        <Text style={styles.sectionTitle}>Ejercicios</Text>
 
-        <View style={styles.currentExerciseCard}>
-          <Text style={styles.exerciseName}>{currentEx.name}</Text>
-          <Text style={styles.exerciseDetails}>
-            {currentEx.weight} • {currentEx.reps} reps
-          </Text>
-
-          <View style={styles.setsContainer}>
-            {currentEx.completedSets.map((completed, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[styles.setButton, completed && styles.completedSet]}
-                onPress={() =>
-                  !completed && completeSet(currentExercise, index)
-                }
-                disabled={completed}
-              >
-                <Text
-                  style={[styles.setText, completed && styles.completedSetText]}
-                >
-                  {index + 1}
+        {exercises.map((exercise, index) => (
+          <View key={exercise.id} style={[
+            styles.exerciseCard,
+            activeExerciseIndex === index && styles.activeExerciseCard
+          ]}>
+            <View style={styles.exerciseHeader}>
+              <View style={styles.exerciseInfo}>
+                <Text style={styles.exerciseName}>{exercise.name}</Text>
+                <Text style={styles.exerciseDetails}>
+                  {exercise.weight} • {exercise.reps} reps
                 </Text>
-                {completed && <Check size={12} color="#000000" />}
+              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  if (activeExerciseIndex === index) {
+                    // Toggle pause for the active exercise
+                    const updatedExercises = [...exercises];
+                    updatedExercises[index].isPaused = !updatedExercises[index].isPaused;
+                    setExercises(updatedExercises);
+                  } else {
+                    // Select a different exercise
+                    selectExercise(index);
+                  }
+                }}
+                style={[
+                  styles.exercisePlayButton,
+                  activeExerciseIndex === index && styles.activePlayButton
+                ]}
+              >
+                {activeExerciseIndex === index ? (
+                  exercises[index].isPaused ? (
+                    <Play size={20} color="#000000" />
+                  ) : (
+                    <Pause size={20} color="#000000" />
+                  )
+                ) : (
+                  <Play size={20} color="#FFFFFF" />
+                )}
               </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+            </View>
 
-        <Text style={styles.sectionTitle}>Próximos Ejercicios</Text>
-        {exercises.slice(currentExercise + 1).map((exercise, index) => (
-          <View key={exercise.id} style={styles.upcomingExercise}>
-            <Text style={styles.upcomingName}>{exercise.name}</Text>
-            <Text style={styles.upcomingDetails}>
-              {exercise.sets} series • {exercise.reps} reps
-            </Text>
+            <View style={styles.setsContainer}>
+              {exercise.completedSets?.map((completed, setIndex) => (
+                <TouchableOpacity
+                  key={setIndex}
+                  style={[styles.setButton, completed && styles.completedSet]}
+                  onPress={() =>
+                    !completed && completeSet(index, setIndex)
+                  }
+                  disabled={completed}
+                >
+                  <Text
+                    style={[styles.setText, completed && styles.completedSetText]}
+                  >
+                    {setIndex + 1}
+                  </Text>
+                  {completed && <Check size={12} color="#000000" />}
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         ))}
 
-        <Text style={styles.sectionTitle}>Controles</Text>
-        <View style={styles.controlsContainer}>
-          <TouchableOpacity
-            onPress={completeEntireRoutine}
-            style={styles.controlButton}
-          >
-            <CheckCircle size={24} color="#FFFFFF" />
-            <Text style={styles.controlButtonText}>Completar Rutina</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={skipExercise}
-            style={styles.controlButton}
-            disabled={currentExercise >= exercises.length - 1}
-          >
-            <SkipForward size={24} color="#FFFFFF" />
-            <Text style={styles.controlButtonText}>Saltar Ejercicio</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={resetWorkout} style={styles.controlButton}>
-            <RotateCcw size={24} color="#FFFFFF" />
-            <Text style={styles.controlButtonText}>Reiniciar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={stopWorkout} style={styles.controlButton}>
-            <Square size={24} color="#FFFFFF" />
-            <Text style={styles.controlButtonText}>Detener</Text>
-          </TouchableOpacity>
-        </View>
+        {exercises.length === 0 && (
+          <View style={styles.currentExerciseCard}>
+            <Text style={styles.exerciseName}>No hay ejercicios disponibles</Text>
+            <Text style={styles.exerciseDetails}>
+              Selecciona una rutina para comenzar
+            </Text>
+          </View>
+        )}
       </ScrollView>
+
+      {/* Bottom Controls */}
+      <View style={styles.bottomControls}>
+        <TouchableOpacity
+          onPress={completeEntireRoutine}
+          style={styles.bottomControlButton}
+        >
+          <CheckCircle size={24} color="#FFFFFF" />
+          <Text style={styles.bottomControlText}>Completar Rutina</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={skipExercise}
+          style={styles.bottomControlButton}
+          disabled={activeExerciseIndex === null || activeExerciseIndex >= exercises.length - 1}
+        >
+          <SkipForward size={24} color="#FFFFFF" />
+          <Text style={styles.bottomControlText}>Saltar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={resetWorkout} style={styles.bottomControlButton}>
+          <RotateCcw size={24} color="#FFFFFF" />
+          <Text style={styles.bottomControlText}>Reiniciar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={stopWorkout} style={styles.bottomControlButton}>
+          <Square size={24} color="#FFFFFF" />
+          <Text style={styles.bottomControlText}>Detener</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Modal para seleccionar rutina */}
       <Modal
@@ -462,64 +581,51 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 20,
-    paddingTop: 60,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingTop: 50,
     borderBottomWidth: 1,
     borderBottomColor: '#333333',
   },
   backButton: {
     padding: 8,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '300',
-    color: '#FFFFFF',
-    letterSpacing: 2,
-  },
-  mainPlayButton: {
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 0,
-    elevation: 8,
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
   timerContainer: {
     alignItems: 'center',
-    padding: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#333333',
   },
   timerText: {
-    fontSize: 48,
+    fontSize: 32,
     fontWeight: '200',
     color: '#FFFFFF',
     fontFamily: 'monospace',
-    letterSpacing: 4,
+    letterSpacing: 2,
   },
   timerLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#FFFFFF',
-    marginTop: 4,
+    marginTop: 2,
     fontWeight: '300',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
   restContainer: {
     alignItems: 'center',
-    padding: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     backgroundColor: '#111111',
     borderBottomWidth: 1,
     borderBottomColor: '#333333',
   },
   restText: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: '200',
     color: '#FFFFFF',
     fontFamily: 'monospace',
-    marginTop: 8,
-    letterSpacing: 3,
+    marginTop: 6,
+    letterSpacing: 2,
   },
   restLabel: {
     fontSize: 16,
@@ -530,7 +636,8 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   sectionTitle: {
     fontSize: 18,
@@ -539,10 +646,37 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     letterSpacing: 1,
   },
+  exerciseCard: {
+    backgroundColor: '#111111',
+    padding: 16,
+    marginBottom: 12,
+  },
+  activeExerciseCard: {
+    backgroundColor: '#222222',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  exerciseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  exerciseInfo: {
+    flex: 1,
+  },
+  exercisePlayButton: {
+    backgroundColor: '#333333',
+    padding: 12,
+    borderRadius: 0,
+  },
+  activePlayButton: {
+    backgroundColor: '#FFFFFF',
+  },
   currentExerciseCard: {
     backgroundColor: '#111111',
-    padding: 20,
-    marginBottom: 20,
+    padding: 16,
+    marginBottom: 16,
   },
   exerciseName: {
     fontSize: 24,
@@ -582,24 +716,6 @@ const styles = StyleSheet.create({
   completedSetText: {
     color: '#000000',
   },
-  upcomingExercise: {
-    backgroundColor: '#111111',
-    padding: 16,
-    marginBottom: 8,
-  },
-  upcomingName: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    fontWeight: '300',
-    letterSpacing: 0.5,
-  },
-  upcomingDetails: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    marginTop: 4,
-    fontWeight: '300',
-    letterSpacing: 0.5,
-  },
   restControls: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -610,23 +726,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#333333',
     padding: 12,
     borderRadius: 0,
-  },
-  controlsContainer: {
-    gap: 12,
-  },
-  controlButton: {
-    backgroundColor: '#111111',
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  controlButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '300',
-    letterSpacing: 0.5,
   },
   routineSelector: {
     flexDirection: 'row',
@@ -702,5 +801,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '300',
     letterSpacing: 0.5,
+  },
+  bottomControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#111111',
+    borderTopWidth: 1,
+    borderTopColor: '#333333',
+  },
+  bottomControlButton: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    minWidth: 70,
+  },
+  bottomControlText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '300',
+    letterSpacing: 0.5,
+    marginTop: 4,
+    textAlign: 'center',
   },
 });

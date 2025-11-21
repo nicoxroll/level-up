@@ -211,8 +211,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000000',
-    padding: 20,
-    paddingTop: 60,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingTop: 50,
   },
   title: {
     fontSize: 32,
@@ -244,14 +245,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 30,
+    marginBottom: 20,
   },
   statCard: {
     backgroundColor: '#111111',
-    padding: 16,
+    padding: 12,
     alignItems: 'center',
     width: '48%',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   statValue: {
     fontSize: 24,
@@ -270,8 +271,8 @@ const styles = StyleSheet.create({
   },
   nextWorkoutCard: {
     backgroundColor: '#111111',
-    padding: 20,
-    marginBottom: 30,
+    padding: 16,
+    marginBottom: 20,
   },
   workoutTitle: {
     fontSize: 20,
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
   },
   achievementCard: {
     backgroundColor: '#111111',
-    padding: 20,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -360,8 +361,8 @@ const styles = StyleSheet.create({
   },
   statsChartCard: {
     backgroundColor: '#111111',
-    padding: 20,
-    marginBottom: 30,
+    padding: 16,
+    marginBottom: 20,
     alignItems: 'center',
   },
   radarContainer: {

@@ -4,7 +4,7 @@ import {
   CheckCircle,
   Dumbbell,
   Calendar,
-  User,
+  List,
 } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
@@ -107,10 +107,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="routines"
         options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+          title: 'Rutinas',
+          tabBarIcon: ({ color, size }) => (
+            <List size={size} color={color} />
+          ),
         }}
       />
     </Tabs>
