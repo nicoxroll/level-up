@@ -22,6 +22,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { usePlayer } from '@/contexts/PlayerContext';
 
 interface WorkoutExercise {
   id: string;
@@ -31,6 +32,7 @@ interface WorkoutExercise {
   weight: string;
   restTime: number;
   completedSets: boolean[];
+  isPaused?: boolean;
 }
 
 interface WorkoutRoutine {
@@ -41,6 +43,7 @@ interface WorkoutRoutine {
 
 export default function WorkoutScreen() {
   const router = useRouter();
+  const { gainExperience } = usePlayer();
   const [activeExerciseIndex, setActiveExerciseIndex] = useState<number | null>(
     null
   );
@@ -53,6 +56,8 @@ export default function WorkoutScreen() {
     null
   );
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
+  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
+  const [exerciseTime, setExerciseTime] = useState(0);
 
   const [availableRoutines, setAvailableRoutines] = useState<WorkoutRoutine[]>(
     []
@@ -194,14 +199,14 @@ export default function WorkoutScreen() {
   useEffect(() => {
     let interval: number;
 
-    if (activeExerciseIndex !== null) {
+    if (isWorkoutActive) {
       interval = setInterval(() => {
         setTotalTime((prev) => prev + 1);
       }, 1000);
     }
 
     return () => clearInterval(interval);
-  }, [activeExerciseIndex]);
+  }, [isWorkoutActive]);
 
   useEffect(() => {
     let restInterval: number;
@@ -211,6 +216,14 @@ export default function WorkoutScreen() {
         setRestTimeLeft((prev) => {
           if (prev <= 1) {
             setIsResting(false);
+            // Move to next exercise
+            if (activeExerciseIndex !== null && activeExerciseIndex < exercises.length - 1) {
+              setActiveExerciseIndex(activeExerciseIndex + 1);
+              setExerciseTime(0);
+            } else {
+              // End workout
+              setIsWorkoutActive(false);
+            }
             return 0;
           }
           return prev - 1;
@@ -220,6 +233,18 @@ export default function WorkoutScreen() {
 
     return () => clearInterval(restInterval);
   }, [isResting, restTimeLeft, isRestPaused]);
+
+  useEffect(() => {
+    let interval: number;
+
+    if (activeExerciseIndex !== null && !isResting && isWorkoutActive) {
+      interval = setInterval(() => {
+        setExerciseTime((prev) => prev + 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [activeExerciseIndex, isResting, isWorkoutActive]);
 
   const toggleWorkout = () => {
     setIsWorkoutActive(!isWorkoutActive);
@@ -300,10 +325,12 @@ export default function WorkoutScreen() {
   const selectRoutine = (routine: WorkoutRoutine) => {
     setSelectedRoutine(routine);
     setExercises(routine.exercises.map((ex) => ({ ...ex, isPaused: false })));
-    setActiveExerciseIndex(null);
+    setActiveExerciseIndex(0); // Start with first exercise
     setIsResting(false);
     setRestTimeLeft(0);
     setTotalTime(0);
+    setIsWorkoutActive(true);
+    setExerciseTime(0);
     setIsRestPaused(false);
     setShowRoutineSelector(false);
   };
@@ -342,6 +369,9 @@ export default function WorkoutScreen() {
       (global as any).updateQuestProgress('weekly', 1); // Weekly workout completed
       (global as any).updateQuestProgress('monthly', 1); // Monthly workout completed
     }
+
+    // Gain XP
+    gainExperience(50);
 
     // Guardar el workout completado en AsyncStorage
     try {
@@ -535,7 +565,6 @@ export default function WorkoutScreen() {
           style={styles.bottomControlButton}
         >
           <CheckCircle size={24} color="#FFFFFF" />
-          <Text style={styles.bottomControlText}>Completar Rutina</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={skipExercise}
@@ -546,21 +575,18 @@ export default function WorkoutScreen() {
           }
         >
           <SkipForward size={24} color="#FFFFFF" />
-          <Text style={styles.bottomControlText}>Saltar</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={resetWorkout}
           style={styles.bottomControlButton}
         >
           <RotateCcw size={24} color="#FFFFFF" />
-          <Text style={styles.bottomControlText}>Reiniciar</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={stopWorkout}
           style={styles.bottomControlButton}
         >
           <Square size={24} color="#FFFFFF" />
-          <Text style={styles.bottomControlText}>Detener</Text>
         </TouchableOpacity>
       </View>
 
@@ -590,6 +616,9 @@ export default function WorkoutScreen() {
                     <Text style={styles.routineName}>{routine.name}</Text>
                     <Text style={styles.routineDetails}>
                       {routine.exercises.length} ejercicios
+                    </Text>
+                    <Text style={styles.exerciseList}>
+                      {routine.exercises.map(ex => ex.name).join(', ')}
                     </Text>
                   </View>
                   {selectedRoutine?.id === routine.id && (
@@ -829,6 +858,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginTop: 2,
   },
+  exerciseList: {
+    fontSize: 12,
+    color: '#888888',
+    fontWeight: '300',
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
   closeModalButton: {
     backgroundColor: '#FFFFFF',
     padding: 16,
@@ -852,16 +888,10 @@ const styles = StyleSheet.create({
   },
   bottomControlButton: {
     alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: 'center',
+    paddingVertical: 12,
     paddingHorizontal: 12,
-    minWidth: 70,
-  },
-  bottomControlText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '300',
-    letterSpacing: 0.5,
-    marginTop: 4,
-    textAlign: 'center',
+    minWidth: 50,
+    minHeight: 50,
   },
 });

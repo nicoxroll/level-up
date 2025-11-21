@@ -14,22 +14,10 @@ import {
   View,
 } from 'react-native';
 import { Polygon, Svg } from 'react-native-svg';
+import { usePlayer } from '@/contexts/PlayerContext';
 
 export default function HomeScreen() {
-  // Estado del jugador
-  const [playerStats, setPlayerStats] = useState({
-    level: 3,
-    experience: 245,
-    experienceToNext: 300,
-    availablePoints: 2, // Puntos para distribuir
-    stats: {
-      fuerza: 15,
-      velocidad: 12,
-      resistencia: 18,
-      constancia: 14,
-      tecnica: 16,
-    },
-  });
+  const { playerStats, distributePoint } = usePlayer();
 
   const stats = [
     { icon: Trophy, label: 'Entrenamientos', value: '12' },
@@ -74,19 +62,6 @@ export default function HomeScreen() {
   };
 
   const radarPoints = getRadarPoints();
-
-  const distributePoint = (statKey: string) => {
-    if (playerStats.availablePoints > 0) {
-      setPlayerStats((prev) => ({
-        ...prev,
-        availablePoints: prev.availablePoints - 1,
-        stats: {
-          ...prev.stats,
-          [statKey]: prev.stats[statKey as keyof typeof prev.stats] + 1,
-        },
-      }));
-    }
-  };
 
   return (
     <View style={styles.container}>
