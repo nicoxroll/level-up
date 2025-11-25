@@ -1,9 +1,4 @@
-import {
-  Calendar,
-  Dumbbell,
-  TrendingUp,
-  Trophy,
-} from 'lucide-react-native';
+import { Calendar, Dumbbell, TrendingUp, Trophy } from 'lucide-react-native';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {

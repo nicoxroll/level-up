@@ -4,7 +4,6 @@ import {
   Check,
   CheckCircle,
   ChevronLeft,
-  ChevronUp,
   Dumbbell,
   Pause,
   Play,
@@ -20,11 +19,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Checkbox, List } from 'react-native-paper';
+import { List } from 'react-native-paper';
 
 interface WorkoutExercise {
   id: string;
@@ -177,7 +175,12 @@ export default function WorkoutScreen() {
           // Set first routine as default if available
           if (userRoutines.length > 0) {
             const firstRoutine = userRoutines[0];
-            setExercises(firstRoutine.exercises.map((ex: any) => ({ ...ex, isPaused: false })));
+            setExercises(
+              firstRoutine.exercises.map((ex: any) => ({
+                ...ex,
+                isPaused: false,
+              }))
+            );
             setSelectedRoutine(firstRoutine);
             setActiveExerciseIndex(null); // Start with no exercise active
           }
@@ -288,7 +291,12 @@ export default function WorkoutScreen() {
           await saveRoutinesToStorage(defaultRoutines); // Save defaults to storage
           if (defaultRoutines.length > 0) {
             const firstRoutine = defaultRoutines[0];
-            setExercises(firstRoutine.exercises.map((ex: any) => ({ ...ex, isPaused: false })));
+            setExercises(
+              firstRoutine.exercises.map((ex: any) => ({
+                ...ex,
+                isPaused: false,
+              }))
+            );
             setSelectedRoutine(firstRoutine);
             setActiveExerciseIndex(null); // Start with no exercise active
           }
@@ -492,12 +500,15 @@ export default function WorkoutScreen() {
     }
 
     // Verificar si todos los ejercicios están completados
-    const allExercisesCompleted = exercises.every((exercise) =>
-      exercise.completedSets?.every((set) => set) || false
+    const allExercisesCompleted = exercises.every(
+      (exercise) => exercise.completedSets?.every((set) => set) || false
     );
 
     if (!allExercisesCompleted) {
-      Alert.alert('Error', 'Completa todos los ejercicios antes de finalizar la rutina');
+      Alert.alert(
+        'Error',
+        'Completa todos los ejercicios antes de finalizar la rutina'
+      );
       return;
     }
 
@@ -507,9 +518,13 @@ export default function WorkoutScreen() {
       setRestTimeLeft(0);
 
       // Calcular estadísticas
-      const totalSets = exercises.reduce((total, exercise) => total + exercise.sets, 0);
+      const totalSets = exercises.reduce(
+        (total, exercise) => total + exercise.sets,
+        0
+      );
       const completedSets = exercises.reduce(
-        (total, exercise) => total + exercise.completedSets.filter((set) => set).length,
+        (total, exercise) =>
+          total + exercise.completedSets.filter((set) => set).length,
         0
       );
 
@@ -518,13 +533,21 @@ export default function WorkoutScreen() {
       const workouts = existingWorkouts ? JSON.parse(existingWorkouts) : {};
       const workoutDates = Object.keys(workouts).sort().slice(-7); // Últimos 7 días
 
-      const avgDuration = workoutDates.length > 0
-        ? workoutDates.reduce((sum, date) => sum + (workouts[date].duration || 0), 0) / workoutDates.length
-        : totalTime;
+      const avgDuration =
+        workoutDates.length > 0
+          ? workoutDates.reduce(
+              (sum, date) => sum + (workouts[date].duration || 0),
+              0
+            ) / workoutDates.length
+          : totalTime;
 
-      const avgExercises = workoutDates.length > 0
-        ? workoutDates.reduce((sum, date) => sum + (workouts[date].exercises || 0), 0) / workoutDates.length
-        : exercises.length;
+      const avgExercises =
+        workoutDates.length > 0
+          ? workoutDates.reduce(
+              (sum, date) => sum + (workouts[date].exercises || 0),
+              0
+            ) / workoutDates.length
+          : exercises.length;
 
       const stats = {
         duration: totalTime,
@@ -533,7 +556,12 @@ export default function WorkoutScreen() {
         avgDuration: Math.round(avgDuration),
         avgExercises: Math.round(avgExercises),
         xpGained: 10, // XP fijo por completar rutina
-        improvement: totalTime < avgDuration ? 'Mejor tiempo' : totalTime > avgDuration ? 'Tiempo similar' : 'Tiempo promedio'
+        improvement:
+          totalTime < avgDuration
+            ? 'Mejor tiempo'
+            : totalTime > avgDuration
+            ? 'Tiempo similar'
+            : 'Tiempo promedio',
       };
 
       setCompletionStats(stats);
@@ -558,7 +586,6 @@ export default function WorkoutScreen() {
 
       workouts[today] = workoutData;
       await AsyncStorage.setItem('completedWorkouts', JSON.stringify(workouts));
-
     } catch (error) {
       console.error('Error saving workout:', error);
       Alert.alert('Error', 'Hubo un problema al guardar el workout');
@@ -584,7 +611,12 @@ export default function WorkoutScreen() {
   };
 
   const completeExercise = (exerciseIndex: number) => {
-    if (!exercises || exercises.length === 0 || exerciseIndex < 0 || exerciseIndex >= exercises.length) {
+    if (
+      !exercises ||
+      exercises.length === 0 ||
+      exerciseIndex < 0 ||
+      exerciseIndex >= exercises.length
+    ) {
       console.error('Invalid exercise index or exercises array');
       return;
     }
@@ -598,7 +630,9 @@ export default function WorkoutScreen() {
     }
 
     // Marcar todas las series como completadas
-    updatedExercises[exerciseIndex].completedSets = exercise.completedSets.map(() => true);
+    updatedExercises[exerciseIndex].completedSets = exercise.completedSets.map(
+      () => true
+    );
     setExercises(updatedExercises);
 
     // Iniciar descanso después de completar el ejercicio
@@ -740,7 +774,9 @@ export default function WorkoutScreen() {
           {isResting ? (
             <View style={styles.restTimerContainer}>
               <Timer size={24} color="#FFFFFF" />
-              <Text style={styles.restTimerText}>{formatTime(restTimeLeft)}</Text>
+              <Text style={styles.restTimerText}>
+                {formatTime(restTimeLeft)}
+              </Text>
               <Text style={styles.restTimerLabel}>Descanso</Text>
             </View>
           ) : (
@@ -758,17 +794,34 @@ export default function WorkoutScreen() {
                 disabled={activeExerciseIndex === null}
               >
                 {isWorkoutPaused ? (
-                  <Play size={20} color={activeExerciseIndex !== null ? "#FFFFFF" : "#666666"} />
+                  <Play
+                    size={20}
+                    color={activeExerciseIndex !== null ? '#FFFFFF' : '#666666'}
+                  />
                 ) : (
-                  <Pause size={20} color={activeExerciseIndex !== null ? "#FFFFFF" : "#666666"} />
+                  <Pause
+                    size={20}
+                    color={activeExerciseIndex !== null ? '#FFFFFF' : '#666666'}
+                  />
                 )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={skipExercise}
                 style={styles.headerButton}
-                disabled={activeExerciseIndex === null || activeExerciseIndex >= exercises.length - 1}
+                disabled={
+                  activeExerciseIndex === null ||
+                  activeExerciseIndex >= exercises.length - 1
+                }
               >
-                <SkipForward size={20} color={activeExerciseIndex !== null && activeExerciseIndex < exercises.length - 1 ? "#FFFFFF" : "#666666"} />
+                <SkipForward
+                  size={20}
+                  color={
+                    activeExerciseIndex !== null &&
+                    activeExerciseIndex < exercises.length - 1
+                      ? '#FFFFFF'
+                      : '#666666'
+                  }
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={completeEntireRoutine}
@@ -830,7 +883,9 @@ export default function WorkoutScreen() {
               <List.Accordion
                 key={exercise.id}
                 title={exercise.name}
-                description={`${exercise.weight} • ${exercise.reps} reps • ${exercise.completedSets?.filter(set => set).length || 0}/${exercise.sets} series`}
+                description={`${exercise.weight} • ${exercise.reps} reps • ${
+                  exercise.completedSets?.filter((set) => set).length || 0
+                }/${exercise.sets} series`}
                 titleStyle={styles.accordionTitle}
                 descriptionStyle={styles.accordionDescription}
                 style={[
@@ -883,7 +938,9 @@ export default function WorkoutScreen() {
                         style={styles.exerciseActionButton}
                       >
                         {activeExerciseIndex === index ? (
-                          exercises && exercises[index] && exercises[index].isPaused ? (
+                          exercises &&
+                          exercises[index] &&
+                          exercises[index].isPaused ? (
                             <Play size={16} color="#FFFFFF" />
                           ) : (
                             <Pause size={16} color="#FFFFFF" />
@@ -895,14 +952,18 @@ export default function WorkoutScreen() {
 
                       <TouchableOpacity
                         onPress={() => {
-                          if (activeExerciseIndex !== null &&
-                              activeExerciseIndex < exercises.length - 1) {
+                          if (
+                            activeExerciseIndex !== null &&
+                            activeExerciseIndex < exercises.length - 1
+                          ) {
                             selectExercise(activeExerciseIndex + 1);
                           }
                         }}
                         style={styles.exerciseActionButton}
-                        disabled={activeExerciseIndex === null ||
-                                 activeExerciseIndex >= exercises.length - 1}
+                        disabled={
+                          activeExerciseIndex === null ||
+                          activeExerciseIndex >= exercises.length - 1
+                        }
                       >
                         <SkipForward size={16} color="#FFFFFF" />
                       </TouchableOpacity>
@@ -914,7 +975,9 @@ export default function WorkoutScreen() {
                   {exercise.completedSets?.map((completed, setIndex) => (
                     <View key={setIndex} style={styles.setItem}>
                       <View style={styles.setInfo}>
-                        <Text style={styles.setNumber}>Serie {setIndex + 1}</Text>
+                        <Text style={styles.setNumber}>
+                          Serie {setIndex + 1}
+                        </Text>
                         <Text style={styles.setDetails}>
                           {exercise.weight} • {exercise.reps} reps
                         </Text>
@@ -924,7 +987,9 @@ export default function WorkoutScreen() {
                           styles.setCheckButton,
                           completed && styles.completedSetButton,
                         ]}
-                        onPress={() => !completed && completeSet(index, setIndex)}
+                        onPress={() =>
+                          !completed && completeSet(index, setIndex)
+                        }
                         disabled={completed}
                       >
                         <Check
@@ -959,12 +1024,8 @@ export default function WorkoutScreen() {
       >
         <View style={styles.countdownOverlay}>
           <View style={styles.countdownContainer}>
-            <Text style={styles.countdownText}>
-              {countdown}
-            </Text>
-            <Text style={styles.countdownSubtext}>
-              ¡Prepárate!
-            </Text>
+            <Text style={styles.countdownText}>{countdown}</Text>
+            <Text style={styles.countdownSubtext}>¡Prepárate!</Text>
           </View>
         </View>
       </Modal>
@@ -985,7 +1046,8 @@ export default function WorkoutScreen() {
                   key={routine.id}
                   style={[
                     styles.routineOption,
-                    selectedRoutine?.id === routine.id && styles.selectedRoutine,
+                    selectedRoutine?.id === routine.id &&
+                      styles.selectedRoutine,
                   ]}
                   onPress={() => selectRoutine(routine)}
                 >
@@ -1032,33 +1094,49 @@ export default function WorkoutScreen() {
             <View style={styles.statsContainer}>
               <View style={styles.statRow}>
                 <Text style={styles.statLabel}>Tiempo Total</Text>
-                <Text style={styles.statValue}>{formatTime(completionStats?.duration || 0)}</Text>
+                <Text style={styles.statValue}>
+                  {formatTime(completionStats?.duration || 0)}
+                </Text>
               </View>
               <View style={styles.statRow}>
                 <Text style={styles.statLabel}>Ejercicios</Text>
-                <Text style={styles.statValue}>{completionStats?.exercises || 0}</Text>
+                <Text style={styles.statValue}>
+                  {completionStats?.exercises || 0}
+                </Text>
               </View>
               <View style={styles.statRow}>
                 <Text style={styles.statLabel}>Series Completadas</Text>
-                <Text style={styles.statValue}>{completionStats?.sets || '0/0'}</Text>
+                <Text style={styles.statValue}>
+                  {completionStats?.sets || '0/0'}
+                </Text>
               </View>
             </View>
 
             <View style={styles.comparisonContainer}>
-              <Text style={styles.comparisonTitle}>Comparado con la semana anterior</Text>
+              <Text style={styles.comparisonTitle}>
+                Comparado con la semana anterior
+              </Text>
               <View style={styles.comparisonRow}>
                 <Text style={styles.comparisonLabel}>Tiempo promedio</Text>
-                <Text style={styles.comparisonValue}>{formatTime(completionStats?.avgDuration || 0)}</Text>
+                <Text style={styles.comparisonValue}>
+                  {formatTime(completionStats?.avgDuration || 0)}
+                </Text>
               </View>
               <View style={styles.comparisonRow}>
                 <Text style={styles.comparisonLabel}>Ejercicios promedio</Text>
-                <Text style={styles.comparisonValue}>{completionStats?.avgExercises || 0}</Text>
+                <Text style={styles.comparisonValue}>
+                  {completionStats?.avgExercises || 0}
+                </Text>
               </View>
-              <Text style={styles.improvementText}>{completionStats?.improvement || ''}</Text>
+              <Text style={styles.improvementText}>
+                {completionStats?.improvement || ''}
+              </Text>
             </View>
 
             <View style={styles.xpContainer}>
-              <Text style={styles.xpText}>+{completionStats?.xpGained || 0} XP</Text>
+              <Text style={styles.xpText}>
+                +{completionStats?.xpGained || 0} XP
+              </Text>
               <Text style={styles.xpLabel}>Puntos de experiencia ganados</Text>
             </View>
 
@@ -1072,7 +1150,9 @@ export default function WorkoutScreen() {
                   setTimeout(() => startRoutine(), 500);
                 }}
               >
-                <Text style={styles.trainAgainButtonText}>Volver a Entrenar</Text>
+                <Text style={styles.trainAgainButtonText}>
+                  Volver a Entrenar
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.finishButton}

@@ -262,7 +262,10 @@ export default function ProfileScreen() {
 
       <Text style={styles.sectionTitle}>Cuenta</Text>
       <View style={styles.menuContainer}>
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(tabs)/routines')}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/(tabs)/routines')}
+        >
           <Dumbbell size={20} color="#FFFFFF" />
           <Text style={styles.menuItemText}>Mis Rutinas</Text>
         </TouchableOpacity>

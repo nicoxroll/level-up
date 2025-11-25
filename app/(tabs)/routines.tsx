@@ -349,20 +349,20 @@ export default function RoutinesScreen() {
                       </Text>
                     </View>
                   </View>
-                <View style={styles.routineActions}>
-                  <TouchableOpacity
-                    onPress={() => startEditRoutine(routine)}
-                    style={styles.editButton}
-                  >
-                    <Text style={styles.editButtonText}>Editar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => deleteRoutine(routine.id)}
-                    style={styles.deleteButton}
-                  >
-                    <Trash2 size={20} color="#FF4444" />
-                  </TouchableOpacity>
-                </View>
+                  <View style={styles.routineActions}>
+                    <TouchableOpacity
+                      onPress={() => startEditRoutine(routine)}
+                      style={styles.editButton}
+                    >
+                      <Text style={styles.editButtonText}>Editar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => deleteRoutine(routine.id)}
+                      style={styles.deleteButton}
+                    >
+                      <Trash2 size={20} color="#FF4444" />
+                    </TouchableOpacity>
+                  </View>
                 </TouchableOpacity>
               ))
             )}
