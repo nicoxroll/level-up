@@ -628,17 +628,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 8,
-    // For web compatibility
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    // React Native Web uses boxShadow
+    // For web compatibility - use boxShadow instead of shadow* props
     boxShadow: '0px 4px 8px rgba(255, 255, 255, 0.3)',
   },
   fabDisabled: {
     backgroundColor: '#666666',
-    shadowOpacity: 0.1,
+    boxShadow: '0px 2px 4px rgba(255, 255, 255, 0.1)',
   },
   modalOverlay: {
     flex: 1,

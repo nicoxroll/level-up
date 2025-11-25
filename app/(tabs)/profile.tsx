@@ -1,23 +1,23 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'expo-router';
 import {
-  User,
-  Settings,
-  LogOut,
-  Trophy,
   Calendar,
   Dumbbell,
+  LogOut,
+  Settings,
   TrendingUp,
+  Trophy,
+  User,
 } from 'lucide-react-native';
-import { Svg, Polygon } from 'react-native-svg';
-import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Polygon, Svg } from 'react-native-svg';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -35,11 +35,23 @@ export default function ProfileScreen() {
       resistencia: 18,
       constancia: 14,
       tecnica: 16,
-    }
+    },
   });
 
-  const statLabels = ['Fuerza', 'Velocidad', 'Resistencia', 'Constancia', 'Técnica'];
-  const statKeys = ['fuerza', 'velocidad', 'resistencia', 'constancia', 'tecnica'];
+  const statLabels = [
+    'Fuerza',
+    'Velocidad',
+    'Resistencia',
+    'Constancia',
+    'Técnica',
+  ];
+  const statKeys = [
+    'fuerza',
+    'velocidad',
+    'resistencia',
+    'constancia',
+    'tecnica',
+  ];
 
   // Calcular posiciones para el gráfico de radar
   const getRadarPoints = () => {
@@ -65,13 +77,13 @@ export default function ProfileScreen() {
 
   const distributePoint = (statKey: string) => {
     if (playerStats.availablePoints > 0) {
-      setPlayerStats(prev => ({
+      setPlayerStats((prev) => ({
         ...prev,
         availablePoints: prev.availablePoints - 1,
         stats: {
           ...prev.stats,
           [statKey]: prev.stats[statKey as keyof typeof prev.stats] + 1,
-        }
+        },
       }));
     }
   };
@@ -112,6 +124,29 @@ export default function ProfileScreen() {
           {user?.email || 'usuario@email.com'}
         </Text>
         <Text style={styles.memberSince}>Miembro desde enero 2024</Text>
+
+        {/* Barra de Progreso del Nivel */}
+        <View style={styles.levelProgressCard}>
+          <View style={styles.levelHeader}>
+            <Text style={styles.levelText}>Nivel {playerStats.level}</Text>
+            <Text style={styles.expText}>
+              {playerStats.experience}/{playerStats.experienceToNext} XP
+            </Text>
+          </View>
+          <View style={styles.expBar}>
+            <View
+              style={[
+                styles.expFill,
+                {
+                  width: `${
+                    (playerStats.experience / playerStats.experienceToNext) *
+                    100
+                  }%`,
+                },
+              ]}
+            />
+          </View>
+        </View>
       </View>
 
       <Text style={styles.sectionTitle}>Estadísticas</Text>
@@ -134,7 +169,7 @@ export default function ProfileScreen() {
               key={index}
               style={[
                 styles.radarCircle,
-                { width: 160 * scale, height: 160 * scale }
+                { width: 160 * scale, height: 160 * scale },
               ]}
             />
           ))}
@@ -148,10 +183,8 @@ export default function ProfileScreen() {
                 style={[
                   styles.radarLine,
                   {
-                    transform: [
-                      { rotate: `${index * 72}deg` }
-                    ]
-                  }
+                    transform: [{ rotate: `${index * 72}deg` }],
+                  },
                 ]}
               />
             );
@@ -160,7 +193,7 @@ export default function ProfileScreen() {
           {/* Área de estadísticas */}
           <Svg width="200" height="200" style={{ position: 'absolute' }}>
             <Polygon
-              points={radarPoints.map(p => `${p.x},${p.y}`).join(' ')}
+              points={radarPoints.map((p) => `${p.x},${p.y}`).join(' ')}
               fill="rgba(255,255,255,0.3)"
               stroke="#FFFFFF"
               strokeWidth="2"
@@ -181,7 +214,7 @@ export default function ProfileScreen() {
                   {
                     left: x - 30,
                     top: y - 10,
-                  }
+                  },
                 ]}
               >
                 {label}
@@ -200,7 +233,8 @@ export default function ProfileScreen() {
                 onPress={() => distributePoint(key)}
               >
                 <Text style={styles.distributeButtonText}>
-                  + {statLabels[index]} ({playerStats.stats[key as keyof typeof playerStats.stats]})
+                  + {statLabels[index]} (
+                  {playerStats.stats[key as keyof typeof playerStats.stats]})
                 </Text>
               </TouchableOpacity>
             ))}
@@ -208,8 +242,31 @@ export default function ProfileScreen() {
         )}
       </View>
 
+      <Text style={styles.sectionTitle}>Próximo Entrenamiento</Text>
+      <View style={styles.nextWorkoutCard}>
+        <Text style={styles.workoutTitle}>Rutina Superior</Text>
+        <Text style={styles.workoutDetails}>6 ejercicios • 45 minutos</Text>
+        <Text style={styles.workoutTime}>Hoy a las 18:00</Text>
+      </View>
+
+      <Text style={styles.sectionTitle}>Logros Recientes</Text>
+      <View style={styles.achievementCard}>
+        <Trophy size={32} color="#FFFFFF" />
+        <View style={styles.achievementInfo}>
+          <Text style={styles.achievementTitle}>¡Primera Semana!</Text>
+          <Text style={styles.achievementDesc}>
+            Completaste 7 entrenamientos seguidos
+          </Text>
+        </View>
+      </View>
+
       <Text style={styles.sectionTitle}>Cuenta</Text>
       <View style={styles.menuContainer}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(tabs)/routines')}>
+          <Dumbbell size={20} color="#FFFFFF" />
+          <Text style={styles.menuItemText}>Mis Rutinas</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.menuItem}>
           <Settings size={20} color="#FFFFFF" />
           <Text style={styles.menuItemText}>Configuración</Text>
@@ -376,5 +433,88 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '300',
     letterSpacing: 0.5,
+  },
+  nextWorkoutCard: {
+    backgroundColor: '#111111',
+    padding: 16,
+    marginBottom: 20,
+  },
+  workoutTitle: {
+    fontSize: 20,
+    color: '#FFFFFF',
+    fontWeight: '300',
+    letterSpacing: 1,
+  },
+  workoutDetails: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    marginTop: 4,
+    fontWeight: '300',
+    letterSpacing: 0.5,
+  },
+  workoutTime: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginTop: 8,
+    fontWeight: '300',
+    letterSpacing: 0.5,
+  },
+  achievementCard: {
+    backgroundColor: '#111111',
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  achievementInfo: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  achievementTitle: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: '300',
+    letterSpacing: 1,
+  },
+  achievementDesc: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    marginTop: 4,
+    fontWeight: '300',
+    letterSpacing: 0.5,
+  },
+  levelProgressCard: {
+    backgroundColor: '#222222',
+    padding: 16,
+    marginTop: 16,
+    borderRadius: 0,
+    width: '100%',
+  },
+  levelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  levelText: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: '300',
+    letterSpacing: 1,
+  },
+  expText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '300',
+    letterSpacing: 0.5,
+  },
+  expBar: {
+    height: 8,
+    backgroundColor: '#333333',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  expFill: {
+    height: '100%',
+    backgroundColor: '#FFFFFF',
   },
 });

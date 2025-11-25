@@ -33,12 +33,14 @@ export default function RoutinesScreen() {
   const [routines, setRoutines] = useState<WorkoutRoutine[]>([]);
   const [showAddRoutine, setShowAddRoutine] = useState(false);
   const [showAddExercise, setShowAddExercise] = useState(false);
+  const [showEditRoutine, setShowEditRoutine] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<WorkoutRoutine | null>(
     null
   );
   const [currentRoutine, setCurrentRoutine] = useState<WorkoutRoutine | null>(
     null
   );
+  const [editingRoutineName, setEditingRoutineName] = useState('');
 
   // Form states
   const [routineName, setRoutineName] = useState('');
@@ -273,6 +275,39 @@ export default function RoutinesScreen() {
     setCurrentRoutine(routine);
   };
 
+  const startEditRoutine = (routine: WorkoutRoutine) => {
+    setEditingRoutine(routine);
+    setEditingRoutineName(routine.name);
+    setShowEditRoutine(true);
+  };
+
+  const saveEditedRoutine = () => {
+    if (!editingRoutine || !editingRoutineName.trim()) {
+      Alert.alert('Error', 'Ingresa un nombre válido para la rutina');
+      return;
+    }
+
+    const updatedRoutine = {
+      ...editingRoutine,
+      name: editingRoutineName.trim(),
+    };
+
+    const updatedRoutines = routines.map((r) =>
+      r.id === editingRoutine.id ? updatedRoutine : r
+    );
+
+    saveRoutines(updatedRoutines);
+
+    // Update current routine if it's the one being edited
+    if (currentRoutine?.id === editingRoutine.id) {
+      setCurrentRoutine(updatedRoutine);
+    }
+
+    setShowEditRoutine(false);
+    setEditingRoutine(null);
+    setEditingRoutineName('');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -314,12 +349,20 @@ export default function RoutinesScreen() {
                       </Text>
                     </View>
                   </View>
+                <View style={styles.routineActions}>
+                  <TouchableOpacity
+                    onPress={() => startEditRoutine(routine)}
+                    style={styles.editButton}
+                  >
+                    <Text style={styles.editButtonText}>Editar</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => deleteRoutine(routine.id)}
                     style={styles.deleteButton}
                   >
                     <Trash2 size={20} color="#FF4444" />
                   </TouchableOpacity>
+                </View>
                 </TouchableOpacity>
               ))
             )}
@@ -335,12 +378,20 @@ export default function RoutinesScreen() {
                 <ChevronLeft size={20} color="#FFFFFF" />
                 <Text style={styles.backToListText}>Volver</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => deleteRoutine(currentRoutine.id)}
-                style={styles.deleteButton}
-              >
-                <Trash2 size={20} color="#FF4444" />
-              </TouchableOpacity>
+              <View style={styles.routineActions}>
+                <TouchableOpacity
+                  onPress={() => startEditRoutine(currentRoutine)}
+                  style={styles.editButton}
+                >
+                  <Text style={styles.editButtonText}>Editar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => deleteRoutine(currentRoutine.id)}
+                  style={styles.deleteButton}
+                >
+                  <Trash2 size={20} color="#FF4444" />
+                </TouchableOpacity>
+              </View>
             </View>
 
             <Text style={styles.routineTitle}>{currentRoutine.name}</Text>
@@ -533,6 +584,45 @@ export default function RoutinesScreen() {
                 onPress={addExerciseToRoutine}
               >
                 <Text style={styles.addButtonText}>Agregar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal para editar rutina */}
+      <Modal
+        visible={showEditRoutine}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowEditRoutine(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Editar Rutina</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nombre de la rutina"
+              placeholderTextColor="#888888"
+              value={editingRoutineName}
+              onChangeText={setEditingRoutineName}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setShowEditRoutine(false);
+                  setEditingRoutine(null);
+                  setEditingRoutineName('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.addModalButton]}
+                onPress={saveEditedRoutine}
+              >
+                <Text style={styles.addButtonText}>Guardar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -801,5 +891,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '300',
     letterSpacing: 0.5,
+  },
+  routineActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editButton: {
+    backgroundColor: '#333333',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 0,
+  },
+  editButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '300',
   },
 });

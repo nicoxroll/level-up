@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { Chrome } from 'lucide-react-native';
 import { useEffect } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -49,8 +48,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Levelup</Text>
       <TouchableOpacity style={styles.loginButton} onPress={handleGoogleLogin}>
-        <Chrome size={24} color="#4285F4" />
-        <Text style={styles.loginButtonText}>Continuar con Google</Text>
+        <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
     </View>
   );
@@ -71,19 +69,18 @@ const styles = StyleSheet.create({
     letterSpacing: 6,
   },
   loginButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    backgroundColor: '#000000',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
     elevation: 5,
     borderRadius: 0,
   },
   loginButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '300',
-    color: '#3C4043',
-    marginLeft: 12,
-    letterSpacing: 0.5,
+    color: '#FFFFFF',
+    letterSpacing: 1,
   },
 });
