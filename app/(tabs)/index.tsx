@@ -1,7 +1,9 @@
+import { usePlayer } from '@/contexts/PlayerContext';
 import { Calendar, Dumbbell, TrendingUp, Trophy } from 'lucide-react-native';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
+  const { playerStats, distributePoint } = usePlayer();
   const stats = [
     { icon: Trophy, label: 'Entrenamientos', value: '12' },
     { icon: Calendar, label: 'Esta Semana', value: '5/7' },
@@ -9,6 +11,42 @@ export default function HomeScreen() {
     { icon: TrendingUp, label: 'Progreso', value: '+15%' },
   ];
 
+  const statLabels = [
+    'Fuerza',
+    'Velocidad',
+    'Resistencia',
+    'Constancia',
+    'Técnica',
+  ];
+  const statKeys = [
+    'fuerza',
+    'velocidad',
+    'resistencia',
+    'constancia',
+    'tecnica',
+  ];
+
+  // Calcular posiciones para el gráfico de radar
+  const getRadarPoints = () => {
+    const centerX = 100;
+    const centerY = 100;
+    const radius = 80;
+    const angleStep = (2 * Math.PI) / 5;
+
+    return statKeys.map((key, index) => {
+      const value = playerStats.stats[key as keyof typeof playerStats.stats];
+      const maxValue = 20; // Valor máximo posible
+      const normalizedValue = value / maxValue;
+      const angle = index * angleStep - Math.PI / 2; // Empezar desde arriba
+
+      return {
+        x: centerX + Math.cos(angle) * radius * normalizedValue,
+        y: centerY + Math.sin(angle) * radius * normalizedValue,
+      };
+    });
+  };
+
+  const radarPoints = getRadarPoints();
   return (
     <View style={styles.container}>
       <Text style={styles.title}>LEVELUP</Text>

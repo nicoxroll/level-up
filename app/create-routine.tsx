@@ -1,3 +1,7 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { ChevronLeft, Plus, X } from 'lucide-react-native';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -6,9 +10,6 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { ChevronLeft, Plus, X } from 'lucide-react-native';
-import { useState } from 'react';
 
 interface Exercise {
   id: string;
@@ -23,6 +24,11 @@ export default function CreateRoutineScreen() {
   const router = useRouter();
   const [routineName, setRoutineName] = useState('');
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredExercises = availableExercises.filter(exercise =>
+    exercise.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const availableExercises = [
     'Press de Banca',
@@ -61,10 +67,32 @@ export default function CreateRoutineScreen() {
     );
   };
 
-  const saveRoutine = () => {
-    // Aquí guardaríamos la rutina en Supabase
-    console.log('Guardando rutina:', { name: routineName, exercises });
-    router.back();
+  const saveRoutine = async () => {
+    if (!routineName.trim() || exercises.length === 0) {
+      alert('Por favor, agrega un nombre y al menos un ejercicio.');
+      return;
+    }
+
+    const newRoutine = {
+      id: Date.now().toString(),
+      name: routineName,
+      exercises: exercises.map(ex => ({
+        ...ex,
+        restTime: parseInt(ex.restTime) || 60,
+      })),
+    };
+
+    try {
+      const existingRoutines = await AsyncStorage.getItem('userRoutines');
+      const routines = existingRoutines ? JSON.parse(existingRoutines) : [];
+      routines.push(newRoutine);
+      await AsyncStorage.setItem('userRoutines', JSON.stringify(routines));
+      alert('Rutina guardada exitosamente!');
+      router.back();
+    } catch (error) {
+      console.error('Error saving routine:', error);
+      alert('Error al guardar la rutina.');
+    }
   };
 
   return (
@@ -155,7 +183,14 @@ export default function CreateRoutineScreen() {
         ))}
 
         <Text style={styles.sectionTitle}>Agregar Ejercicio</Text>
-        {availableExercises.map((exercise) => (
+        <TextInput
+          style={styles.input}
+          placeholder="Buscar ejercicio..."
+          placeholderTextColor="#888888"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {filteredExercises.map((exercise) => (
           <TouchableOpacity
             key={exercise}
             style={styles.addExerciseButton}

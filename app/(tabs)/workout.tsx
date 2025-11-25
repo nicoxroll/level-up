@@ -12,6 +12,7 @@ import {
   Square,
   Timer,
 } from 'lucide-react-native';
+import { List } from 'react-native-paper';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -22,7 +23,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { List } from 'react-native-paper';
+import { usePlayer } from '@/contexts/PlayerContext';
 
 interface WorkoutExercise {
   id: string;
@@ -43,6 +44,7 @@ interface WorkoutRoutine {
 
 export default function WorkoutScreen() {
   const router = useRouter();
+  const { gainExperience } = usePlayer();
   const [activeExerciseIndex, setActiveExerciseIndex] = useState<number | null>(
     null
   );
@@ -55,8 +57,7 @@ export default function WorkoutScreen() {
     null
   );
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
-  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
-  const [isWorkoutPaused, setIsWorkoutPaused] = useState(false);
+
   const [availableRoutines, setAvailableRoutines] = useState<WorkoutRoutine[]>(
     []
   );
@@ -163,6 +164,11 @@ export default function WorkoutScreen() {
   // Estado para el modal de resumen de rutina completada
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completionStats, setCompletionStats] = useState<any>(null);
+
+  // Estados adicionales para el control del workout
+  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
+  const [isWorkoutPaused, setIsWorkoutPaused] = useState(false);
+  const [exerciseTime, setExerciseTime] = useState(0);
 
   // Load routines from storage
   useEffect(() => {
@@ -311,14 +317,14 @@ export default function WorkoutScreen() {
   useEffect(() => {
     let interval: number;
 
-    if (activeExerciseIndex !== null && !isWorkoutPaused) {
+    if (isWorkoutActive) {
       interval = setInterval(() => {
         setTotalTime((prev) => prev + 1);
       }, 1000);
     }
 
     return () => clearInterval(interval);
-  }, [activeExerciseIndex, isWorkoutPaused]);
+  }, [isWorkoutActive]);
 
   useEffect(() => {
     let restInterval: number;
@@ -328,6 +334,14 @@ export default function WorkoutScreen() {
         setRestTimeLeft((prev) => {
           if (prev <= 1) {
             setIsResting(false);
+            // Move to next exercise
+            if (activeExerciseIndex !== null && activeExerciseIndex < exercises.length - 1) {
+              setActiveExerciseIndex(activeExerciseIndex + 1);
+              setExerciseTime(0);
+            } else {
+              // End workout
+              setIsWorkoutActive(false);
+            }
             return 0;
           }
           return prev - 1;
@@ -357,6 +371,18 @@ export default function WorkoutScreen() {
 
     return () => clearInterval(countdownInterval);
   }, [countdown]);
+
+  useEffect(() => {
+    let interval: number;
+
+    if (activeExerciseIndex !== null && !isResting && isWorkoutActive) {
+      interval = setInterval(() => {
+        setExerciseTime((prev) => prev + 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [activeExerciseIndex, isResting, isWorkoutActive]);
 
   const toggleWorkout = () => {
     setIsWorkoutActive(!isWorkoutActive);
@@ -463,10 +489,12 @@ export default function WorkoutScreen() {
   const selectRoutine = (routine: WorkoutRoutine) => {
     setSelectedRoutine(routine);
     setExercises(routine.exercises.map((ex) => ({ ...ex, isPaused: false })));
-    setActiveExerciseIndex(null);
+    setActiveExerciseIndex(0); // Start with first exercise
     setIsResting(false);
     setRestTimeLeft(0);
     setTotalTime(0);
+    setIsWorkoutActive(true);
+    setExerciseTime(0);
     setIsRestPaused(false);
     setIsWorkoutPaused(false);
     setIsRoutineStarted(false); // Reset routine state
@@ -516,6 +544,9 @@ export default function WorkoutScreen() {
       setIsWorkoutActive(false);
       setIsResting(false);
       setRestTimeLeft(0);
+
+      // Gain XP
+      gainExperience(50);
 
       // Calcular estadísticas
       const totalSets = exercises.reduce(
@@ -567,12 +598,12 @@ export default function WorkoutScreen() {
       setCompletionStats(stats);
       setShowCompletionModal(true);
 
-      // Update quest progress for workout completion
-      if ((global as any).updateQuestProgress) {
-        (global as any).updateQuestProgress('daily', 1); // Daily workout completed
-        (global as any).updateQuestProgress('weekly', 1); // Weekly workout completed
-        (global as any).updateQuestProgress('monthly', 1); // Monthly workout completed
-      }
+    // Update quest progress for workout completion
+    if ((global as any).updateQuestProgress) {
+      (global as any).updateQuestProgress('daily', 1); // Daily workout completed
+      (global as any).updateQuestProgress('weekly', 1); // Weekly workout completed
+      (global as any).updateQuestProgress('monthly', 1); // Monthly workout completed
+    }
 
       // Guardar el workout completado en AsyncStorage
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
@@ -1015,20 +1046,41 @@ export default function WorkoutScreen() {
         )}
       </ScrollView>
 
-      {/* Modal de conteo regresivo */}
-      <Modal
-        visible={showCountdown}
-        animationType="fade"
-        transparent={true}
-        onRequestClose={() => {}}
-      >
-        <View style={styles.countdownOverlay}>
-          <View style={styles.countdownContainer}>
-            <Text style={styles.countdownText}>{countdown}</Text>
-            <Text style={styles.countdownSubtext}>¡Prepárate!</Text>
-          </View>
-        </View>
-      </Modal>
+      {/* Bottom Controls */}
+      <View style={styles.bottomControls}>
+        <TouchableOpacity
+          onPress={completeEntireRoutine}
+          style={styles.bottomControlButton}
+        >
+          <CheckCircle size={24} color="#FFFFFF" />
+          <Text style={styles.bottomControlText}>Completar Rutina</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={skipExercise}
+          style={styles.bottomControlButton}
+          disabled={
+            activeExerciseIndex === null ||
+            activeExerciseIndex >= exercises.length - 1
+          }
+        >
+          <SkipForward size={24} color="#FFFFFF" />
+          <Text style={styles.bottomControlText}>Saltar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={resetWorkout}
+          style={styles.bottomControlButton}
+        >
+          <RotateCcw size={24} color="#FFFFFF" />
+          <Text style={styles.bottomControlText}>Reiniciar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={stopWorkout}
+          style={styles.bottomControlButton}
+        >
+          <Square size={24} color="#FFFFFF" />
+          <Text style={styles.bottomControlText}>Detener</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Modal para seleccionar rutina */}
       <Modal
@@ -1057,6 +1109,9 @@ export default function WorkoutScreen() {
                     <Text style={styles.routineDetails}>
                       {routine.exercises.length} ejercicios
                     </Text>
+                    <Text style={styles.exerciseList}>
+                      {routine.exercises.map(ex => ex.name).join(', ')}
+                    </Text>
                   </View>
                   {selectedRoutine?.id === routine.id && (
                     <Check size={20} color="#FFFFFF" />
@@ -1070,6 +1125,21 @@ export default function WorkoutScreen() {
             >
               <Text style={styles.closeModalText}>Cerrar</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de conteo regresivo */}
+      <Modal
+        visible={showCountdown}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => {}}
+      >
+        <View style={styles.countdownOverlay}>
+          <View style={styles.countdownContainer}>
+            <Text style={styles.countdownText}>{countdown}</Text>
+            <Text style={styles.countdownSubtext}>¡Prepárate!</Text>
           </View>
         </View>
       </Modal>
@@ -1404,6 +1474,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginTop: 2,
   },
+  exerciseList: {
+    fontSize: 12,
+    color: '#888888',
+    fontWeight: '300',
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
   closeModalButton: {
     backgroundColor: '#FFFFFF',
     padding: 16,
@@ -1427,134 +1504,10 @@ const styles = StyleSheet.create({
   },
   bottomControlButton: {
     alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: 'center',
+    paddingVertical: 12,
     paddingHorizontal: 12,
     minWidth: 70,
-  },
-  createRoutineButton: {
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  createRoutineText: {
-    color: '#000000',
-    fontSize: 16,
-    fontWeight: '300',
-    letterSpacing: 0.5,
-  },
-  routineOptionContainer: {
-    marginBottom: 8,
-  },
-  routineActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-  editButton: {
-    backgroundColor: '#333333',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 0,
-  },
-  editButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '300',
-  },
-  deleteButton: {
-    backgroundColor: '#FF4444',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 0,
-  },
-  deleteButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '300',
-  },
-  routineNameInput: {
-    backgroundColor: '#333333',
-    color: '#FFFFFF',
-    padding: 12,
-    marginBottom: 16,
-    fontSize: 16,
-    borderRadius: 0,
-  },
-  exercisesList: {
-    maxHeight: 150,
-    marginBottom: 16,
-  },
-  exerciseInRoutine: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#222222',
-    padding: 12,
-    marginBottom: 4,
-  },
-  exerciseInRoutineText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '300',
-  },
-  removeExerciseButton: {
-    backgroundColor: '#FF4444',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  removeExerciseText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-  },
-  availableExercisesList: {
-    maxHeight: 150,
-    marginBottom: 16,
-  },
-  availableExercise: {
-    backgroundColor: '#333333',
-    padding: 12,
-    marginBottom: 4,
-  },
-  availableExerciseText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '300',
-  },
-  availableExerciseDetails: {
-    color: '#CCCCCC',
-    fontSize: 14,
-    marginTop: 4,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  cancelButton: {
-    backgroundColor: '#333333',
-    padding: 12,
-    flex: 1,
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  cancelButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '300',
-  },
-  saveButton: {
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    flex: 1,
-    alignItems: 'center',
-    marginLeft: 8,
-  },
-  saveButtonText: {
-    color: '#000000',
-    fontSize: 16,
-    fontWeight: '300',
   },
   bottomControlText: {
     color: '#FFFFFF',
