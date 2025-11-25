@@ -1,3 +1,4 @@
+import { usePlayer } from '@/contexts/PlayerContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import {
@@ -12,7 +13,6 @@ import {
   Square,
   Timer,
 } from 'lucide-react-native';
-import { List } from 'react-native-paper';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -23,7 +23,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { usePlayer } from '@/contexts/PlayerContext';
+import { List } from 'react-native-paper';
 
 interface WorkoutExercise {
   id: string;
@@ -335,7 +335,10 @@ export default function WorkoutScreen() {
           if (prev <= 1) {
             setIsResting(false);
             // Move to next exercise
-            if (activeExerciseIndex !== null && activeExerciseIndex < exercises.length - 1) {
+            if (
+              activeExerciseIndex !== null &&
+              activeExerciseIndex < exercises.length - 1
+            ) {
               setActiveExerciseIndex(activeExerciseIndex + 1);
               setExerciseTime(0);
             } else {
@@ -598,12 +601,12 @@ export default function WorkoutScreen() {
       setCompletionStats(stats);
       setShowCompletionModal(true);
 
-    // Update quest progress for workout completion
-    if ((global as any).updateQuestProgress) {
-      (global as any).updateQuestProgress('daily', 1); // Daily workout completed
-      (global as any).updateQuestProgress('weekly', 1); // Weekly workout completed
-      (global as any).updateQuestProgress('monthly', 1); // Monthly workout completed
-    }
+      // Update quest progress for workout completion
+      if ((global as any).updateQuestProgress) {
+        (global as any).updateQuestProgress('daily', 1); // Daily workout completed
+        (global as any).updateQuestProgress('weekly', 1); // Weekly workout completed
+        (global as any).updateQuestProgress('monthly', 1); // Monthly workout completed
+      }
 
       // Guardar el workout completado en AsyncStorage
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
@@ -1110,7 +1113,7 @@ export default function WorkoutScreen() {
                       {routine.exercises.length} ejercicios
                     </Text>
                     <Text style={styles.exerciseList}>
-                      {routine.exercises.map(ex => ex.name).join(', ')}
+                      {routine.exercises.map((ex) => ex.name).join(', ')}
                     </Text>
                   </View>
                   {selectedRoutine?.id === routine.id && (

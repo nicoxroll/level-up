@@ -1,8 +1,8 @@
+import { PlayerProvider } from '@/contexts/PlayerContext';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { PaperProvider } from 'react-native-paper';
-import { PlayerProvider } from '@/contexts/PlayerContext';
 
 export default function RootLayout() {
   useFrameworkReady();

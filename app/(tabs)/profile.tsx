@@ -1,3 +1,4 @@
+import { usePlayer } from '@/contexts/PlayerContext';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import {
@@ -18,7 +19,6 @@ import {
   View,
 } from 'react-native';
 import { Polygon, Svg } from 'react-native-svg';
-import { usePlayer } from '@/contexts/PlayerContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
